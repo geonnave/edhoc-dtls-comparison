@@ -18,6 +18,7 @@ static const shell_command_t shell_commands[] = {
 extern void mbedtls_memory_buffer_alloc_init(uint8_t *buf, size_t len);
 #endif
 #elif defined(USE_DTLS13)
+#include <wolfssl/ssl.h>
 extern int dtls_client(int argc, char **argv);
 extern int dtls_server(int argc, char **argv);
 static const shell_command_t shell_commands[] = {

@@ -1,3 +1,5 @@
+#ifdef USE_EDHOC
+
 #include <stdio.h>
 #include "edhoc_rs.h"
 #include "edhoc_creds.h"
@@ -6,6 +8,9 @@ int edhoc_responder(int argc, char **argv) {
     (void)argc;
     (void)argv;
     puts("Begin test: edhoc handshake.");
+    EdhocResponderC responder = responder_new(R, 32*2, G_I, 32*2, ID_CRED_I, 4*2, CRED_I, 107*2, ID_CRED_R, 4*2, CRED_R, 84*2);
+    (void)responder;
+
     // EdhocMessageBuffer message_1 = buffer;
     // responder_process_message_1(&responder, &message_1);
 
@@ -23,3 +28,5 @@ int edhoc_responder(int argc, char **argv) {
     puts("End test: edhoc handshake.");
     return 0;
 }
+
+#endif /* USE_EDHOC */

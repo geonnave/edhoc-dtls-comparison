@@ -1,10 +1,10 @@
 # name of your application
 APPLICATION = edhoc-dtls-1_3-comparison
-
-# If no BOARD is found in the environment, use this default:
 BOARD ?= nrf52840dk
+RIOTBASE ?= $(CURDIR)/../../RIOT
+DEVELHELP ?= 1
 
-ifeq (dtls, $(PROTOCOL))
+ifeq (dtls, $(SEC))
 CFLAGS += -DUSE_DTLS13 # flag for the application code
 
 CFLAGS += -DDTLS_DEFAULT_PORT=$(DTLS_PORT) -DDTLS_WOLFSSL -Wno-unused-parameter -Wno-unused-variable -DLOG_LEVEL=LOG_DEBUG
@@ -22,7 +22,7 @@ USEMODULE += wolfssl_dtls13
 else
 CFLAGS += -DUSE_EDHOC # flag for the application code
 
-INCLUDES += -I$(CURDIR)/../../edhoc-rs-FORK/include
+INCLUDES += -I$(CURDIR)/../../edhoc-rs-FORK/target/include
 ARCHIVES += $(CURDIR)/../../edhoc-rs-FORK/target/thumbv7em-none-eabihf/release/libedhoc_rs.a
 
 # This is actually only needed in the RUST_CRYPTOCELL310 configuration
@@ -40,10 +40,5 @@ USEMODULE += sock_udp
 USEMODULE += od
 USEMODULE += shell
 USEMODULE += shell_cmds_default
-
-# This has to be the absolute path to the RIOT base directory:
-RIOTBASE ?= $(CURDIR)/../../RIOT
-
-DEVELHELP ?= 1
 
 include $(RIOTBASE)/Makefile.include

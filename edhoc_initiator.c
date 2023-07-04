@@ -1,6 +1,8 @@
+#ifdef USE_EDHOC
+
 #include <stdio.h>
+#include <od.h>
 #include "edhoc_rs.h"
-#include "od.h"
 #include "edhoc_creds.h"
 
 int edhoc_initiator(int argc, char **argv) {
@@ -30,3 +32,5 @@ int edhoc_initiator(int argc, char **argv) {
 
     return 0;
 }
+
+#endif /* USE_EDHOC */
