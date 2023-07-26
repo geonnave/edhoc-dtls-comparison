@@ -43,7 +43,7 @@ extern unsigned int server_key_len;
 static sock_tls_t skv;
 static sock_tls_t *sk = &skv;
 
-static const char Test_dtls_string[] = "DTLS OK!";
+static const char Test_dtls_string[] = "DTLS OK (comparison)!";
 
 #ifdef MODULE_WOLFSSL_PSK
 /* identity is OpenSSL testing default for openssl s_client, keep same */

@@ -89,7 +89,7 @@ static inline unsigned int my_psk_client_cb(WOLFSSL* ssl, const char* hint,
 int dtls_client(int argc, char **argv)
 {
     int ret = 0;
-    char buf[APP_DTLS_BUF_SIZE] = "Hello from DTLS client!";
+    char buf[APP_DTLS_BUF_SIZE] = "Hello from DTLS client (comparison)!";
     char *iface;
     char *addr_str;
     int connect_timeout = 0;

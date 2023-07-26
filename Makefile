@@ -1,8 +1,9 @@
 # name of your application
 APPLICATION = edhoc-dtls-1_3-comparison
 BOARD ?= nrf52840dk
-RIOTBASE ?= $(CURDIR)/../../RIOT
+RIOTBASE ?= $(CURDIR)/../../RIOT-FORK
 DEVELHELP ?= 1
+QUIET ?= 1
 
 ifeq (dtls, $(SEC))
 CFLAGS += -DUSE_DTLS13 # flag for the application code
@@ -10,6 +11,9 @@ CFLAGS += -DUSE_DTLS13 # flag for the application code
 CFLAGS += -DDTLS_DEFAULT_PORT=$(DTLS_PORT) -DDTLS_WOLFSSL -Wno-unused-parameter -Wno-unused-variable -DLOG_LEVEL=LOG_DEBUG
 # A larger stack size is required if using ECC or RSA
 CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(4*THREAD_STACKSIZE_DEFAULT\)
+
+INCLUDES += -I/home/gfedrech/Developer/inria/dev/edhoc-rs-FORK/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/include
+ARCHIVES += /home/gfedrech/Developer/inria/dev/edhoc-rs-FORK/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/lib/cortex-m4/hard-float/libnrf_cc310_0.9.13.a
 
 USEPKG += wolfssl
 USEMODULE += wolfcrypt
