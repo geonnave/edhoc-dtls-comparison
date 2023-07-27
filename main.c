@@ -19,6 +19,7 @@ extern void mbedtls_memory_buffer_alloc_init(uint8_t *buf, size_t len);
 #endif
 #elif defined(USE_DTLS13)
 #include <wolfssl/ssl.h>
+#include <wolfssl/wolfcrypt/wc_port.h>
 extern int dtls_client(int argc, char **argv);
 extern int dtls_server(int argc, char **argv);
 static const shell_command_t shell_commands[] = {
@@ -47,9 +48,17 @@ int main(void)
 #endif
 #elif defined(USE_DTLS13)
     puts("Selected protocol: DTLS 1.3");
+
+    printf("will wolfCrypt_Init......\n");
+    int ret;
+    if ((ret = wolfCrypt_Init()) != 0) {
+        printf("wolfCrypt_Init failed %d\n", ret);
+        return -1;
+    }
+
     wolfSSL_Init();
     wolfSSL_Debugging_ON();
-    // dtls13 will run on sock_dtls (wolfssl's wrapper for sock_udp)
+    puts("WolfSSL initialized\n");
 #endif
 
     /* start shell */
