@@ -7,5 +7,5 @@ make all flash term
 Run with DTLS 1.3:
 
 ```bash
-make all flash term PROTOCOL=dtls
+make all flash term SEC=dtls
 ```

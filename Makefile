@@ -1,7 +1,7 @@
 # name of your application
 APPLICATION = edhoc-dtls-1_3-comparison
 BOARD ?= nrf52840dk
-RIOTBASE ?= $(CURDIR)/../../RIOT
+RIOTBASE ?= $(CURDIR)/../../RIOT-FORK
 DEVELHELP ?= 1
 
 ifeq (dtls, $(SEC))
@@ -9,12 +9,17 @@ CFLAGS += -DUSE_DTLS13 # flag for the application code
 
 CFLAGS += -DDTLS_DEFAULT_PORT=$(DTLS_PORT) -DDTLS_WOLFSSL -Wno-unused-parameter -Wno-unused-variable -DLOG_LEVEL=LOG_DEBUG
 # A larger stack size is required if using ECC or RSA
-CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(4*THREAD_STACKSIZE_DEFAULT\)
+# CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(4*THREAD_STACKSIZE_DEFAULT\)
+CFLAGS += -DTHREAD_STACKSIZE_DEFAULT=16384 -DISR_STACKSIZE=16384 -DTHREAD_STACKSIZE_MAIN=16384
+
+INCLUDES += -I$(CURDIR)/../../edhoc-rs-FORK/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/include
+ARCHIVES += $(CURDIR)/../../edhoc-rs-FORK/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/lib/cortex-m4/hard-float/no-interrupts/libnrf_cc310_0.9.13.a
 
 USEPKG += wolfssl
 USEMODULE += wolfcrypt
 USEMODULE += wolfcrypt_ecc
 USEMODULE += wolfssl
+USEMODULE += wolfcrypt_cryptocell
 # USEMODULE += wolfssl_debug
 USEMODULE += wolfssl_dtls
 USEMODULE += wolfssl_tls13
