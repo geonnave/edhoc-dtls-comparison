@@ -27,6 +27,18 @@ static const shell_command_t shell_commands[] = {
     { "dtlss", "Start and stop a DTLS server", dtls_server },
     { NULL, NULL, NULL }
 };
+#elif defined(CC310_ONLY)
+#include "sns_silib.h"
+#include "crys_rnd.h"
+#include "crys_ecpki_kg.h"
+#include "crys_ecpki_types.h"
+#include "crys_ecpki_domain.h"
+CRYS_RND_State_t     wc_rndCtx;
+CRYS_RND_WorkBuff_t  wc_rndWorkBuff;
+SaSiRndGenerateVectWorkFunc_t wc_rndGenVectFunc = CRYS_RND_GenerateVector;
+static const shell_command_t shell_commands[] = {
+    { NULL, NULL, NULL }
+};
 #endif
 
 int main(void)
@@ -59,6 +71,36 @@ int main(void)
     wolfSSL_Init();
     wolfSSL_Debugging_ON();
     puts("WolfSSL initialized\n");
+#elif defined(CC310_ONLY)
+    puts("Just testing the CC310 crypto accelerator");
+    int ret = SaSi_LibInit();
+    if (ret != SASI_SUCCESS) {
+        printf("SaSi_LibInit failed %d\n", ret);
+        return -1;
+    }
+    ret = CRYS_RndInit(&wc_rndCtx, &wc_rndWorkBuff);
+    if (ret != CRYS_OK) {
+        printf("CRYS_RndInit failed %d\n", ret);
+        return -1;
+    }
+
+    const CRYS_ECPKI_Domain_t           * p_domain = CRYS_ECPKI_GetEcDomain(CRYS_ECPKI_DomainID_secp256r1);
+    CRYS_ECPKI_UserPrivKey_t        p_private_key_user = { 0 };
+    CRYS_ECPKI_UserPublKey_t        p_public_key_user = { 0 };
+    CRYS_ECPKI_KG_TempData_t        temp_data;
+    CRYS_ECPKI_KG_FipsContext_t     temp_fips_buffer;
+
+    CRYSError_t crys_error = CRYS_ECPKI_GenKeyPair(&wc_rndCtx,
+                                       wc_rndGenVectFunc,
+                                       p_domain,
+                                       &p_private_key_user,
+                                       &p_public_key_user,
+                                       &temp_data,
+                                       &temp_fips_buffer );
+    if (crys_error != CRYS_OK) {
+        printf("CRYS_ECPKI_GenKeyPair failed %ld\n", crys_error);
+        return -1;
+    }
 #endif
 
     /* start shell */
