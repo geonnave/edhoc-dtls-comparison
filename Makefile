@@ -6,7 +6,6 @@ DEVELHELP ?= 1
 
 ifeq (dtls, $(SEC))
 CFLAGS += -DUSE_DTLS13 # flag for the application code
-
 CFLAGS += -DDTLS_DEFAULT_PORT=$(DTLS_PORT) -DDTLS_WOLFSSL -Wno-unused-parameter -Wno-unused-variable -DLOG_LEVEL=LOG_DEBUG
 # A larger stack size is required if using ECC or RSA
 # CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(4*THREAD_STACKSIZE_DEFAULT\)
@@ -26,12 +25,12 @@ USEMODULE += wolfssl_tls13
 USEMODULE += wolfssl_dtls13
 else
 CFLAGS += -DUSE_EDHOC # flag for the application code
-
 INCLUDES += -I$(CURDIR)/../../edhoc-rs-FORK/target/include
 ARCHIVES += $(CURDIR)/../../edhoc-rs-FORK/target/thumbv7em-none-eabihf/release/libedhoc_rs.a
-
 # This is actually only needed in the RUST_CRYPTOCELL310 configuration
 CFLAGS += -DTHREAD_STACKSIZE_DEFAULT=16384 -DISR_STACKSIZE=16384
+
+USEMODULE += gcoap
 endif
 
 # Include packages that pull up and auto-init the link layer.
@@ -42,8 +41,15 @@ USEMODULE += auto_init_gnrc_netif
 USEMODULE += gnrc_ipv6_default
 USEMODULE += sock_udp
 
+# optional and debug modules
+CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic
 USEMODULE += od
+USEMODULE += fmt
 USEMODULE += shell
+USEMODULE += netutils
+USEMODULE += random
 USEMODULE += shell_cmds_default
+USEMODULE += ps
+USEMODULE += gnrc_icmpv6_echo
 
 include $(RIOTBASE)/Makefile.include
