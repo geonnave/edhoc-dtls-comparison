@@ -48,6 +48,10 @@ int main(void)
     edhoc_initiator(0, NULL);
     puts("END Sending TEST request");
 
+    while(1) {
+        // do nothing
+    }
+
 
 #ifdef RUST_PSA
     // Memory buffer for mbedtls

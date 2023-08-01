@@ -1,8 +1,13 @@
 #ifdef USE_EDHOC
 
 #include <stdio.h>
+
+#include "net/gcoap.h"
+
 #include "edhoc_rs.h"
 #include "edhoc_creds.h"
+
+
 
 int edhoc_responder(int argc, char **argv) {
     (void)argc;

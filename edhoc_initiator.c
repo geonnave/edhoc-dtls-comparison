@@ -1,7 +1,7 @@
 #ifdef USE_EDHOC
 
 #include <stdio.h>
-#include <od.h>
+#include "od.h"
 #include "edhoc_rs.h"
 
 #include "net/gcoap.h"
@@ -11,25 +11,9 @@
 
 static char *addr_str = "[fe80::b834:d60b:796f:8de0%6]:5683";
 
-// typedef struct client_state {
-//     bool has_new_response;
-//     coap_pkt_t response_pdu;
-// } client_state_t;
+EdhocInitiatorC initiator = {0};
 
-// client_state_t client_state = {
-//     .has_new_response = false,
-//     .response_pdu = {0},
-// };
-
-static void _resp_handler(const gcoap_request_memo_t *memo, coap_pkt_t* pdu,
-                          const sock_udp_ep_t *remote)
-{
-    printf("Received response: %u\n", pdu->hdr->code);
-    printf("Received response: %.*s\n", (int)pdu->payload_len, (char *)pdu->payload);
-
-    // client_state.has_new_response = true;
-    // memcpy(&client_state.response_pdu, pdu, sizeof(coap_pkt_t));
-}
+static void coap_response_handler_for_edhoc(const gcoap_request_memo_t *memo, coap_pkt_t* pdu, const sock_udp_ep_t *remote);
 
 static ssize_t _send_coap_message(uint8_t *buf, size_t len, char *addr_str)
 {
@@ -45,7 +29,7 @@ static ssize_t _send_coap_message(uint8_t *buf, size_t len, char *addr_str)
         remote.port = CONFIG_GCOAP_PORT;
     }
 
-    bytes_sent = gcoap_req_send(buf, len, &remote, _resp_handler, NULL);
+    bytes_sent = gcoap_req_send(buf, len, &remote, coap_response_handler_for_edhoc, NULL);
     return bytes_sent;
 }
 
@@ -76,34 +60,55 @@ int send_edhoc_coap_request(uint8_t *payload, size_t paylen, uint8_t value_to_pr
     return 0;
 }
 
+static void coap_response_handler_for_edhoc(const gcoap_request_memo_t *memo, coap_pkt_t* pdu, const sock_udp_ep_t *remote)
+{
+    printf("COAP: Received response: %u\n", pdu->hdr->code);
+    printf("COAP: Received response: %.*s\n", (int)pdu->payload_len, (char *)pdu->payload);
+    // od_hex_dump(pdu->payload, pdu->payload_len, OD_WIDTH_DEFAULT);
+
+    if (initiator.state._0 == WaitMessage2) {
+        printf("EDHOC: will process message_2\n");
+        // construct and process the received message_2
+        EdhocMessageBuffer message_2 = { .len = pdu->payload_len };
+        memcpy(message_2.content, pdu->payload, pdu->payload_len);
+        uint8_t c_r_received;
+        initiator_process_message_2(&initiator, &message_2, &c_r_received);
+        printf("EDHOC: processed message_2 (c_r_received: %u):\n", c_r_received);
+        od_hex_dump(message_2.content, message_2.len, OD_WIDTH_DEFAULT);
+
+        // construct and send message_3
+        EdhocMessageBuffer message_3;
+        uint8_t prk_out_initiator[SHA256_DIGEST_LEN];
+        initiator_prepare_message_3(&initiator, &message_3, &prk_out_initiator);
+        printf("EDHOC: prepared message_3:\n");
+        od_hex_dump(message_3.content, message_3.len, OD_WIDTH_DEFAULT);
+        printf("EDHOC: prk_out_initiator: \n");
+        od_hex_dump(prk_out_initiator, SHA256_DIGEST_LEN, OD_WIDTH_DEFAULT);
+
+        send_edhoc_coap_request(message_3.content, message_3.len, c_r_received); // prepend c_r_received to message_3
+    } else if (initiator.state._0 == Completed) {
+        printf("EDHOC: Received message_3 response\n");
+        printf("EDHOC: end handshake.\n");
+    } else {
+        printf("EDHOC: Received unexpected response\n");
+    }
+}
+
 int edhoc_initiator(int argc, char **argv) {
     (void)argc;
     (void)argv;
-    puts("Begin test: edhoc handshake.");
-    EdhocInitiatorC initiator = initiator_new(I, 32*2, G_R, 32*2, ID_CRED_I, 4*2, CRED_I, 107*2, ID_CRED_R, 4*2, CRED_R, 84*2);
+
+    printf("EDHOC: begin handshake.\n");
+    initiator = initiator_new(I, 32*2, G_R, 32*2, ID_CRED_I, 4*2, CRED_I, 107*2, ID_CRED_R, 4*2, CRED_R, 84*2);
 
     EdhocMessageBuffer message_1;
     initiator_prepare_message_1(&initiator, &message_1);
+    printf("EDHOC: prepared message_1:\n");
     od_hex_dump(message_1.content, message_1.len, OD_WIDTH_DEFAULT);
 
     send_edhoc_coap_request(message_1.content, message_1.len, 0xF5); // prepend CBOR true to message_1
 
-    // EdhocMessageBuffer message_2;
-    // // message_2 = send_coap(message_1)
-    // uint8_t c_r_received;
-    // initiator_process_message_2(&initiator, &message_2, &c_r_received);
-
-
-
-    // EdhocMessageBuffer message_3;
-    // uint8_t prk_out_initiator[SHA256_DIGEST_LEN];
-    // initiator_prepare_message_3(&initiator, &message_3, &prk_out_initiator);
-    // // send_coap(message_3)
-
-    // printf("\nprk_out_initiator: \n");
-    // od_hex_dump(prk_out_initiator, SHA256_DIGEST_LEN, OD_WIDTH_DEFAULT);
-
-    puts("End test: edhoc handshake.");
+    // rest of the logic is in the response handler
 
     return 0;
 }
