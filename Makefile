@@ -29,6 +29,7 @@ INCLUDES += -I$(CURDIR)/../../edhoc-rs-FORK/target/include
 ARCHIVES += $(CURDIR)/../../edhoc-rs-FORK/target/thumbv7em-none-eabihf/release/libedhoc_rs.a
 # This is actually only needed in the RUST_CRYPTOCELL310 configuration
 CFLAGS += -DTHREAD_STACKSIZE_DEFAULT=16384 -DISR_STACKSIZE=16384
+CFLAGS += -DCONFIG_GCOAP_RESEND_BUFS_MAX=2
 
 USEMODULE += gcoap
 endif

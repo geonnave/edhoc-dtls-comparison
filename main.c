@@ -43,14 +43,14 @@ int main(void)
     puts("Selected protocol: EDHOC");
     // edhoc will run on sock_udp
 
-    puts("BEGIN Sending TEST request");
-    // send_request();
-    edhoc_initiator(0, NULL);
-    puts("END Sending TEST request");
+    // puts("BEGIN Sending TEST request");
+    // edhoc_initiator(0, NULL);
+    // // edhoc_responder(0, NULL);
+    // puts("END Sending TEST request");
 
-    while(1) {
-        // do nothing
-    }
+    // while(1) {
+    //     // do nothing
+    // }
 
 
 #ifdef RUST_PSA

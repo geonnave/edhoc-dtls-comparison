@@ -2,11 +2,10 @@
 
 #include <stdio.h>
 #include "od.h"
-#include "edhoc_rs.h"
-
 #include "net/gcoap.h"
 #include "net/sock/util.h"
 
+#include "edhoc_rs.h"
 #include "edhoc_creds.h"
 
 static char *addr_str = "[fe80::b834:d60b:796f:8de0%6]:5683";
@@ -18,15 +17,11 @@ static void coap_response_handler_for_edhoc(const gcoap_request_memo_t *memo, co
 static ssize_t _send_coap_message(uint8_t *buf, size_t len, char *addr_str)
 {
     size_t bytes_sent;
-    sock_udp_ep_t remote;
+    sock_udp_ep_t remote = { .port = CONFIG_GCOAP_PORT };
 
     if (sock_udp_name2ep(&remote, addr_str) != 0) {
-        printf("gcoap: sock udp name2ep failed\n");
+        printf("COAP: sock udp name2ep failed\n");
         return 0;
-    }
-
-    if (remote.port == 0) {
-        remote.port = CONFIG_GCOAP_PORT;
     }
 
     bytes_sent = gcoap_req_send(buf, len, &remote, coap_response_handler_for_edhoc, NULL);
@@ -39,7 +34,8 @@ int send_edhoc_coap_request(uint8_t *payload, size_t paylen, uint8_t value_to_pr
     size_t len;
 
     // gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_METHOD_GET, "/.well-known/core");
-    gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_METHOD_POST, "/.well-known/edhoc");
+    // gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_METHOD_POST, "/.well-known/edhoc");
+    gcoap_req_init(&pdu, buf, CONFIG_GCOAP_PDU_BUF_SIZE, COAP_METHOD_POST, "/foo");
     coap_hdr_set_type(pdu.hdr, COAP_TYPE_CON);
     coap_opt_add_format(&pdu, COAP_FORMAT_TEXT);
     len = coap_opt_finish(&pdu, COAP_OPT_FINISH_PAYLOAD);
@@ -49,11 +45,11 @@ int send_edhoc_coap_request(uint8_t *payload, size_t paylen, uint8_t value_to_pr
         len += paylen + 1;
     }
 
-    printf("Sending request to %s\n", addr_str);
+    printf("Sending request of len %u to %s\n", len, addr_str);
     od_hex_dump(buf, len, OD_WIDTH_DEFAULT);
     ssize_t ret = _send_coap_message(buf, len, addr_str);
     if (ret <= 0) {
-        printf("gcoap: msg send failed: %d\n", ret);
+        printf("COAP: msg send failed: %d\n", ret);
         return 1;
     }
 
@@ -65,6 +61,11 @@ static void coap_response_handler_for_edhoc(const gcoap_request_memo_t *memo, co
     printf("COAP: Received response: %u\n", pdu->hdr->code);
     printf("COAP: Received response: %.*s\n", (int)pdu->payload_len, (char *)pdu->payload);
     // od_hex_dump(pdu->payload, pdu->payload_len, OD_WIDTH_DEFAULT);
+
+    if (pdu->hdr->code != COAP_CODE_CHANGED) {
+        printf("COAP: Received unexpected response with code: %u\n", pdu->hdr->code);
+        return;
+    }
 
     if (initiator.state._0 == WaitMessage2) {
         printf("EDHOC: will process message_2\n");
