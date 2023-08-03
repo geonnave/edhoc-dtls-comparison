@@ -131,7 +131,7 @@ int dtls_server(int argc, char **argv)
         return -1;
     }
 
-    LOG(LOG_INFO, "Listening on %d\n", SERVER_PORT);
+    LOG_DEBUG("Listening on %d\n", SERVER_PORT);
     while(1) {
         /* Wait until a new client connects */
         ret = wolfSSL_accept(sk->ssl);
@@ -143,23 +143,25 @@ int dtls_server(int argc, char **argv)
             }
             continue;
         }
+        LOG_INFO("DTLS: end handshake ok.\n");
 
         /* Wait until data is received */
-        LOG(LOG_INFO, "Connection accepted\n");
+        LOG_DEBUG("Connection accepted\n");
         ret = wolfSSL_read(sk->ssl, buf, APP_DTLS_BUF_SIZE);
         if (ret > 0) {
             buf[ret] = (char)0;
-            LOG(LOG_INFO, "Received '%s'\n", buf);
+            LOG_DEBUG("Received '%s'\n", buf);
         }
 
         /* Send reply */
-        LOG(LOG_INFO, "Sending 'DTLS OK'...\n");
+        LOG_DEBUG("Sending 'DTLS OK'...\n");
         wolfSSL_write(sk->ssl, Test_dtls_string, sizeof(Test_dtls_string));
 
         /* Cleanup/shutdown */
-        LOG(LOG_INFO, "Closing connection.\n");
+        LOG_DEBUG("Closing connection.\n");
         sock_dtls_session_destroy(sk);
         sock_dtls_close(sk);
+        LOG_INFO("Connection closed ok.\n");
         break;
     }
     return 0;

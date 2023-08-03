@@ -6,7 +6,7 @@ DEVELHELP ?= 1
 
 ifeq (dtls, $(SEC))
 CFLAGS += -DUSE_DTLS13 # flag for the application code
-CFLAGS += -DDTLS_DEFAULT_PORT=$(DTLS_PORT) -DDTLS_WOLFSSL -Wno-unused-parameter -Wno-unused-variable -DLOG_LEVEL=LOG_DEBUG
+CFLAGS += -DDTLS_DEFAULT_PORT=$(DTLS_PORT) -DDTLS_WOLFSSL
 # A larger stack size is required if using ECC or RSA
 # CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(4*THREAD_STACKSIZE_DEFAULT\)
 CFLAGS += -DTHREAD_STACKSIZE_DEFAULT=16384 -DISR_STACKSIZE=16384 -DTHREAD_STACKSIZE_MAIN=16384
@@ -43,7 +43,7 @@ USEMODULE += gnrc_ipv6_default
 USEMODULE += sock_udp
 
 # optional and debug modules
-CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic
+CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic -DLOG_LEVEL=LOG_INFO
 USEMODULE += od
 USEMODULE += fmt
 USEMODULE += shell

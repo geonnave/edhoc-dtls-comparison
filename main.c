@@ -32,41 +32,28 @@ static const shell_command_t shell_commands[] = {
 
 int main(void)
  {
-    puts("EDHOC to TLS1.3 Comparison!");
+    LOG_INFO("EDHOC to TLS1.3 Comparison!\n");
 
     /* we need a message queue for the thread running the shell in order to
      * receive potentially fast incoming networking packets */
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
-    LOG(LOG_INFO, "RIOT wolfSSL DTLS testing implementation\n");
+    LOG_INFO("RIOT wolfSSL DTLS testing implementation\n");
 
 #if defined(USE_EDHOC)
-    puts("Selected protocol: EDHOC");
-    // edhoc will run on sock_udp
-
-    // puts("BEGIN Sending TEST request");
-    // edhoc_initiator(0, NULL);
-    // // edhoc_responder(0, NULL);
-    // puts("END Sending TEST request");
-
-    // while(1) {
-    //     // do nothing
-    // }
-
-
+    LOG_INFO("Selected protocol: EDHOC\n");
 #ifdef RUST_PSA
     // Memory buffer for mbedtls
     uint8_t buffer[4096 * 2] = {0};
     mbedtls_memory_buffer_alloc_init(buffer, 4096 * 2);
 #endif
 #elif defined(USE_DTLS13)
-    puts("Selected protocol: DTLS 1.3");
+    LOG_INFO("Selected protocol: DTLS 1.3\n");
     wolfSSL_Init();
     wolfSSL_Debugging_ON();
-    // dtls13 will run on sock_dtls (wolfssl's wrapper for sock_udp)
 #endif
 
     /* start shell */
-    LOG(LOG_INFO, "All up, running the shell now\n");
+    LOG_INFO("All up, running the shell now\n");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 

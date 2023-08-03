@@ -127,6 +127,8 @@ int dtls_client(int argc, char **argv)
         return -1;
     }
     remote.port = SERVER_PORT;
+
+    LOG_INFO("DTLS: begin handshake.\n");
     // if (sock_dtls_create(sk, &local, &remote, 0, wolfDTLSv1_2_client_method()) != 0) {
     if (sock_dtls_create(sk, &local, &remote, 0, wolfDTLSv1_3_client_method()) != 0) {
         LOG(LOG_ERROR, "ERROR: Unable to create DTLS sock\n");
@@ -152,7 +154,7 @@ int dtls_client(int argc, char **argv)
     if (sock_dtls_session_create(sk) < 0)
         return -1;
     wolfSSL_dtls_set_timeout_init(sk->ssl, 5);
-    LOG(LOG_INFO, "connecting to server...\n");
+    LOG_DEBUG("connecting to server...\n");
     /* attempt to connect until the connection is successful */
     do {
         ret = wolfSSL_connect(sk->ssl);
@@ -174,6 +176,7 @@ int dtls_client(int argc, char **argv)
             }
         }
     } while(ret != SSL_SUCCESS);
+    LOG_INFO("DTLS: end handshake ok.\n");
 
     /* set remote endpoint */
     sock_dtls_set_endpoint(sk, &remote);
@@ -184,15 +187,16 @@ int dtls_client(int argc, char **argv)
     /* wait for a reply, indefinitely */
     do {
         ret = wolfSSL_read(sk->ssl, buf, APP_DTLS_BUF_SIZE - 1);
-        LOG(LOG_INFO, "wolfSSL_read returned %d\n", ret);
+        LOG_DEBUG("wolfSSL_read returned %d\n", ret);
     } while (ret <= 0);
     buf[ret] = (char)0;
-    LOG(LOG_INFO, "Received: '%s'\n", buf);
+    LOG_DEBUG("Received: '%s'\n", buf);
 
     /* Clean up and exit. */
-    LOG(LOG_INFO, "Closing connection.\n");
+    LOG_DEBUG("Closing connection.\n");
     sock_dtls_session_destroy(sk);
     sock_dtls_close(sk);
+    LOG_INFO("Connection closed ok.\n");
     return 0;
 }
 
