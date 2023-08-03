@@ -32,6 +32,9 @@
 #include "net/gnrc/netif.h"
 #include "log.h"
 
+extern void MEASURE_START(void);
+extern void MEASURE_STOP(void);
+
 #define SERVER_PORT 11111
 #define APP_DTLS_BUF_SIZE 64
 
@@ -128,7 +131,8 @@ int dtls_client(int argc, char **argv)
     }
     remote.port = SERVER_PORT;
 
-    LOG_INFO("DTLS: begin handshake.\n");
+    MEASURE_START();
+
     // if (sock_dtls_create(sk, &local, &remote, 0, wolfDTLSv1_2_client_method()) != 0) {
     if (sock_dtls_create(sk, &local, &remote, 0, wolfDTLSv1_3_client_method()) != 0) {
         LOG(LOG_ERROR, "ERROR: Unable to create DTLS sock\n");
@@ -176,7 +180,8 @@ int dtls_client(int argc, char **argv)
             }
         }
     } while(ret != SSL_SUCCESS);
-    LOG_INFO("DTLS: end handshake ok.\n");
+
+    MEASURE_STOP();
 
     /* set remote endpoint */
     sock_dtls_set_endpoint(sk, &remote);

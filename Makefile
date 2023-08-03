@@ -42,6 +42,8 @@ USEMODULE += auto_init_gnrc_netif
 USEMODULE += gnrc_ipv6_default
 USEMODULE += sock_udp
 
+FEATURES_OPTIONAL += periph_gpio
+
 # optional and debug modules
 CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic -DLOG_LEVEL=LOG_INFO
 USEMODULE += od

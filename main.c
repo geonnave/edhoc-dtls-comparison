@@ -3,12 +3,33 @@
 #include "shell.h"
 #include "log.h"
 #include "od.h"
+#include "periph/gpio.h"
 
 #define MAIN_QUEUE_SIZE     (8)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
+gpio_t pin_otii = GPIO_PIN(0, 31);
+
+void MEASURE_START(void)
+{
+#if defined(USE_EDHOC)
+    LOG_INFO("EDHOC: begin handshake.\n");
+#elif defined(USE_DTLS13)
+    LOG_INFO("DTLS: begin handshake.\n");
+#endif
+    gpio_set(pin_otii);
+}
+
+void MEASURE_STOP(void)
+{
+    gpio_clear(pin_otii);
+#if defined(USE_EDHOC)
+    LOG_INFO("EDHOC: end handshake ok.\n");
+#elif defined(USE_DTLS13)
+    LOG_INFO("DTLS: end handshake ok.\n");
+#endif
+}
 
 #if defined(USE_EDHOC)
-extern int send_request(void);
 extern int edhoc_initiator(int argc, char **argv);
 extern int edhoc_responder(int argc, char **argv);
 static const shell_command_t shell_commands[] = {
@@ -37,7 +58,10 @@ int main(void)
     /* we need a message queue for the thread running the shell in order to
      * receive potentially fast incoming networking packets */
     msg_init_queue(_main_msg_queue, MAIN_QUEUE_SIZE);
-    LOG_INFO("RIOT wolfSSL DTLS testing implementation\n");
+
+    // initialize pin for OTII device, which is used for measuring
+    // energy consumption and handshake duration
+    gpio_init(pin_otii, GPIO_OUT);
 
 #if defined(USE_EDHOC)
     LOG_INFO("Selected protocol: EDHOC\n");
