@@ -24,7 +24,8 @@ USEMODULE += wolfcrypt
 USEMODULE += wolfcrypt_ecc
 USEMODULE += wolfssl
 USEMODULE += wolfcrypt_cryptocell
-USEMODULE += wolfssl_debug
+# USEMODULE += wolfssl_debug
+USEMODULE += wolfssl_rpk
 USEMODULE += wolfssl_dtls
 USEMODULE += wolfssl_tls13
 USEMODULE += wolfssl_dtls13
@@ -54,7 +55,7 @@ USEMODULE += ztimer
 USEMODULE += ztimer_msec
 
 # optional and debug modules
-CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic -DLOG_LEVEL=LOG_DEBUG
+CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic -DLOG_LEVEL=LOG_INFO
 USEMODULE += od
 USEMODULE += fmt
 USEMODULE += shell

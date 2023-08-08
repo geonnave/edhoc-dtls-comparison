@@ -1,25 +1,5 @@
 #ifdef USE_DTLS13
 
-/*
- * Copyright (C) 2019 Daniele Lacamera
- *
- * This file is subject to the terms and conditions of the GNU Lesser
- * General Public License v2.1. See the file LICENSE in the top level
- * directory for more details.
- */
-
-/**
- * @ingroup     examples
- * @{
- *
- * @file
- * @brief       Demonstrating DTLS 1.3 client using wolfSSL
- *
- * @author      Daniele Lacamera <daniele@wolfssl.com>
- * @author      Geovane Fedrecheski <geovane.fedrecheski@inria.fr>
- * @}
- */
-
 #include <wolfssl/ssl.h>
 #include <wolfssl/error-ssl.h>
 #include <sock_tls.h>
@@ -41,53 +21,41 @@ extern void MEASURE_STOP(void);
 extern const unsigned char server_cert[];
 extern const unsigned long server_cert_len;
 
+// xxd -i wolfssl/certs/ecc-client-keyPub.der
+unsigned char client_rpk[] = {
+  0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02,
+  0x01, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03,
+  0x42, 0x00, 0x04, 0x55, 0xbf, 0xf4, 0x0f, 0x44, 0x50, 0x9a, 0x3d, 0xce,
+  0x9b, 0xb7, 0xf0, 0xc5, 0x4d, 0xf5, 0x70, 0x7b, 0xd4, 0xec, 0x24, 0x8e,
+  0x19, 0x80, 0xec, 0x5a, 0x4c, 0xa2, 0x24, 0x03, 0x62, 0x2c, 0x9b, 0xda,
+  0xef, 0xa2, 0x35, 0x12, 0x43, 0x84, 0x76, 0x16, 0xc6, 0x56, 0x95, 0x06,
+  0xcc, 0x01, 0xa9, 0xbd, 0xf6, 0x75, 0x1a, 0x42, 0xf7, 0xbd, 0xa9, 0xb2,
+  0x36, 0x22, 0x5f, 0xc7, 0x5d, 0x7f, 0xb4
+};
+unsigned int client_rpk_len = 91;
+// xxd -i wolfssl/certs/ecc-client-key.der
+unsigned char client_rpk_priv[] = {
+  0x30, 0x77, 0x02, 0x01, 0x01, 0x04, 0x20, 0xf8, 0xcf, 0x92, 0x6b, 0xbd,
+  0x1e, 0x28, 0xf1, 0xa8, 0xab, 0xa1, 0x23, 0x4f, 0x32, 0x74, 0x18, 0x88,
+  0x50, 0xad, 0x7e, 0xc7, 0xec, 0x92, 0xf8, 0x8f, 0x97, 0x4d, 0xaf, 0x56,
+  0x89, 0x65, 0xc7, 0xa0, 0x0a, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d,
+  0x03, 0x01, 0x07, 0xa1, 0x44, 0x03, 0x42, 0x00, 0x04, 0x55, 0xbf, 0xf4,
+  0x0f, 0x44, 0x50, 0x9a, 0x3d, 0xce, 0x9b, 0xb7, 0xf0, 0xc5, 0x4d, 0xf5,
+  0x70, 0x7b, 0xd4, 0xec, 0x24, 0x8e, 0x19, 0x80, 0xec, 0x5a, 0x4c, 0xa2,
+  0x24, 0x03, 0x62, 0x2c, 0x9b, 0xda, 0xef, 0xa2, 0x35, 0x12, 0x43, 0x84,
+  0x76, 0x16, 0xc6, 0x56, 0x95, 0x06, 0xcc, 0x01, 0xa9, 0xbd, 0xf6, 0x75,
+  0x1a, 0x42, 0xf7, 0xbd, 0xa9, 0xb2, 0x36, 0x22, 0x5f, 0xc7, 0x5d, 0x7f,
+  0xb4
+};
+unsigned int client_rpk_priv_len = 121;
+
 static sock_tls_t skv;
 static sock_tls_t *sk = &skv;
 
 static void usage(const char *cmd_name)
 {
-    LOG(LOG_ERROR, "Usage: %s <server-address>\n", cmd_name);
+    LOG_ERROR("Usage: %s <server-address>\n", cmd_name);
 }
-
-#ifdef MODULE_WOLFSSL_PSK
-/* identity is OpenSSL testing default for openssl s_client, keep same */
-static const char* kIdentityStr = "Client_identity";
-
-static inline unsigned int my_psk_client_cb(WOLFSSL* ssl, const char* hint,
-        char* identity, unsigned int id_max_len, unsigned char* key,
-        unsigned int key_max_len)
-{
-    (void)ssl;
-    (void)hint;
-    (void)key_max_len;
-
-    /* see internal.h MAX_PSK_ID_LEN for PSK identity limit */
-    strncpy(identity, kIdentityStr, id_max_len);
-
-    if (wolfSSL_GetVersion(ssl) < WOLFSSL_TLSV1_3) {
-        /* test key in hex is 0x1a2b3c4d , in decimal 439,041,101 , we're using
-           unsigned binary */
-        key[0] = 0x1a;
-        key[1] = 0x2b;
-        key[2] = 0x3c;
-        key[3] = 0x4d;
-
-        return 4;   /* length of key in octets or 0 for error */
-    }
-    else {
-        int i;
-        int b = 0x01;
-
-        for (i = 0; i < 32; i++, b += 0x22) {
-            if (b >= 0x100)
-                b = 0x01;
-            key[i] = b;
-        }
-
-        return 32;   /* length of key in octets or 0 for error */
-    }
-}
-#endif
 
 int dtls_client(int argc, char **argv)
 {
@@ -118,14 +86,14 @@ int dtls_client(int argc, char **argv)
     else {
         gnrc_netif_t *netif = gnrc_netif_get_by_pid(atoi(iface));
         if (netif == NULL) {
-            LOG(LOG_ERROR, "ERROR: interface not valid\n");
+            LOG_ERROR("ERROR: interface not valid\n");
             usage(argv[0]);
             return -1;
         }
         remote.netif = (uint16_t)netif->pid;
     }
     if (ipv6_addr_from_str((ipv6_addr_t *)remote.addr.ipv6, addr_str) == NULL) {
-        LOG(LOG_ERROR, "ERROR: unable to parse destination address\n");
+        LOG_ERROR("ERROR: unable to parse destination address\n");
         usage(argv[0]);
         return -1;
     }
@@ -135,29 +103,59 @@ int dtls_client(int argc, char **argv)
 
     // if (sock_dtls_create(sk, &local, &remote, 0, wolfDTLSv1_2_client_method()) != 0) {
     if (sock_dtls_create(sk, &local, &remote, 0, wolfDTLSv1_3_client_method()) != 0) {
-        LOG(LOG_ERROR, "ERROR: Unable to create DTLS sock\n");
+        LOG_ERROR("ERROR: Unable to create DTLS sock\n");
         return -1;
     }
 
-#ifndef MODULE_WOLFSSL_PSK
+//     /* Disable certificate validation from the client side */
+//     wolfSSL_CTX_set_verify(sk->ctx, SSL_VERIFY_NONE, 0);
+
+//     /* Load certificate file for the DTLS client */
+//     if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, server_cert,
+//                 server_cert_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
+//     {
+//         LOG_ERROR("Error loading cert buffer\n");
+//         return -1;
+//     }
+
     /* Disable certificate validation from the client side */
-    wolfSSL_CTX_set_verify(sk->ctx, SSL_VERIFY_NONE, 0);
+    wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
+    // wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_PEER, NULL);
 
-    /* Load certificate file for the DTLS client */
-    if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, server_cert,
-                server_cert_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
+    /* Load RPK for the DTLS client */
+    if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, client_rpk,
+                client_rpk_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
     {
-        LOG(LOG_ERROR, "Error loading cert buffer\n");
+        LOG_ERROR("Error loading cert buffer\n");
         return -1;
     }
 
-#else /* !def MODULE_WOLFSSL_PSK */
-    wolfSSL_CTX_set_psk_client_callback(sk->ctx, my_psk_client_cb);
-#endif
+    /* Load the private key */
+    if (wolfSSL_CTX_use_PrivateKey_buffer(sk->ctx, client_rpk_priv,
+                client_rpk_priv_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
+    {
+        LOG_ERROR("Failed to load private key from memory.\n");
+        return -1;
+    }
 
-    if (sock_dtls_session_create(sk) < 0)
+    if (sock_dtls_session_create(sk) < 0) // calls wolfSSL_new(sk->ctx)
         return -1;
     wolfSSL_dtls_set_timeout_init(sk->ssl, 5);
+
+    char ctype[] = {WOLFSSL_CERT_TYPE_RPK};
+    char stype[] = {WOLFSSL_CERT_TYPE_RPK};
+    // char stype[] = {WOLFSSL_CERT_TYPE_X509};
+    if (wolfSSL_set_client_cert_type(sk->ssl, ctype, 1) != SSL_SUCCESS)
+    {
+        LOG_ERROR("Failed to set client cert type.\n");
+        return -1;
+    }
+    if (wolfSSL_set_server_cert_type(sk->ssl, stype, 1) != SSL_SUCCESS)
+    {
+        LOG_ERROR("Failed to set server cert type.\n");
+        return -1;
+    }
+
     LOG_DEBUG("connecting to server...\n");
     /* attempt to connect until the connection is successful */
     do {
