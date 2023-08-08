@@ -4,6 +4,11 @@ BOARD ?= nrf52840dk
 RIOTBASE ?= $(CURDIR)/../../RIOT-FORK
 DEVELHELP ?= 1
 
+ifeq (eval, $(MODE))
+TIMES ?= 3
+CFLAGS += -DEVALUATION_MODE -DEVALUATION_TIMES=$(TIMES)
+endif
+
 ifeq (dtls, $(SEC))
 CFLAGS += -DUSE_DTLS13 # flag for the application code
 CFLAGS += -DDTLS_DEFAULT_PORT=$(DTLS_PORT) -DDTLS_WOLFSSL
@@ -19,7 +24,7 @@ USEMODULE += wolfcrypt
 USEMODULE += wolfcrypt_ecc
 USEMODULE += wolfssl
 USEMODULE += wolfcrypt_cryptocell
-# USEMODULE += wolfssl_debug
+USEMODULE += wolfssl_debug
 USEMODULE += wolfssl_dtls
 USEMODULE += wolfssl_tls13
 USEMODULE += wolfssl_dtls13
@@ -42,10 +47,14 @@ USEMODULE += auto_init_gnrc_netif
 USEMODULE += gnrc_ipv6_default
 USEMODULE += sock_udp
 
+# Modules used for the evauluation
 FEATURES_OPTIONAL += periph_gpio
+USEMODULE += periph_gpio_irq
+USEMODULE += ztimer
+USEMODULE += ztimer_msec
 
 # optional and debug modules
-CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic -DLOG_LEVEL=LOG_INFO
+CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic -DLOG_LEVEL=LOG_DEBUG
 USEMODULE += od
 USEMODULE += fmt
 USEMODULE += shell

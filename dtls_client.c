@@ -16,7 +16,7 @@
  * @brief       Demonstrating DTLS 1.3 client using wolfSSL
  *
  * @author      Daniele Lacamera <daniele@wolfssl.com>
- * @author      Geovane Fedrecheski <daniele@wolfssl.com>
+ * @author      Geovane Fedrecheski <geovane.fedrecheski@inria.fr>
  * @}
  */
 

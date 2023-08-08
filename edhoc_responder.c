@@ -83,6 +83,9 @@ static ssize_t coap_edhoc_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coa
 
         MEASURE_STOP();
 
+        // reset responder, to be ready for a possible next session
+        responder = responder_new(R, 32*2, G_I, 32*2, ID_CRED_I, 4*2, CRED_I, 107*2, ID_CRED_R, 4*2, CRED_R, 84*2);
+
         return ret;
     }
 
@@ -99,7 +102,6 @@ int edhoc_responder(int argc, char **argv) {
 
     LOG_DEBUG("EDHOC: initialize responder.\n");
     responder = responder_new(R, 32*2, G_I, 32*2, ID_CRED_I, 4*2, CRED_I, 107*2, ID_CRED_R, 4*2, CRED_R, 84*2);
-    (void)responder;
 
     return 0;
 }

@@ -4,10 +4,38 @@
 #include "log.h"
 #include "od.h"
 #include "periph/gpio.h"
+#include "ztimer.h"
 
 #define MAIN_QUEUE_SIZE     (8)
 static msg_t _main_msg_queue[MAIN_QUEUE_SIZE];
 gpio_t pin_otii = GPIO_PIN(0, 31);
+
+#if defined(USE_EDHOC)
+#include "edhoc_rs.h"
+extern int edhoc_initiator(int argc, char **argv);
+extern int edhoc_responder(int argc, char **argv);
+#ifndef EVALUATION_MODE
+static const shell_command_t shell_commands[] = {
+    { "edhoci", "Start a EDHOC initiator", edhoc_initiator },
+    { "edhocr", "Start and stop a EDHOC responder", edhoc_responder },
+    { NULL, NULL, NULL }
+};
+#endif
+#ifdef RUST_PSA
+extern void mbedtls_memory_buffer_alloc_init(uint8_t *buf, size_t len);
+#endif
+#elif defined(USE_DTLS13)
+#include "wolfssl/ssl.h"
+extern int dtls_client(int argc, char **argv);
+extern int dtls_server(int argc, char **argv);
+#ifndef EVALUATION_MODE
+static const shell_command_t shell_commands[] = {
+    { "dtlsc", "Start a DTLS client", dtls_client },
+    { "dtlss", "Start and stop a DTLS server", dtls_server },
+    { NULL, NULL, NULL }
+};
+#endif
+#endif
 
 void MEASURE_START(void)
 {
@@ -29,27 +57,22 @@ void MEASURE_STOP(void)
 #endif
 }
 
+static void run_evaluation(size_t times)
+{
+    LOG_INFO("Triggering handshake for %u times! (in 10 seconds...) \n", times);
+    ztimer_sleep(ZTIMER_MSEC, 10000);
+    for (size_t i = 0; i < times; i++) {
+        LOG_INFO("Handshake %u\n", i);
 #if defined(USE_EDHOC)
-extern int edhoc_initiator(int argc, char **argv);
-extern int edhoc_responder(int argc, char **argv);
-static const shell_command_t shell_commands[] = {
-    { "edhoci", "Start a EDHOC initiator", edhoc_initiator },
-    { "edhocr", "Start and stop a EDHOC responder", edhoc_responder },
-    { NULL, NULL, NULL }
-};
-#ifdef RUST_PSA
-extern void mbedtls_memory_buffer_alloc_init(uint8_t *buf, size_t len);
-#endif
+        edhoc_initiator(0, NULL);
 #elif defined(USE_DTLS13)
-#include "wolfssl/ssl.h"
-extern int dtls_client(int argc, char **argv);
-extern int dtls_server(int argc, char **argv);
-static const shell_command_t shell_commands[] = {
-    { "dtlsc", "Start a DTLS client", dtls_client },
-    { "dtlss", "Start and stop a DTLS server", dtls_server },
-    { NULL, NULL, NULL }
-};
+        int argc = 2;
+        char *argv[] = {"dtlsc", "fe80::b834:d60b:796f:8de0"};
+        dtls_client(argc, argv);
 #endif
+        ztimer_sleep(ZTIMER_MSEC, 3000);
+    }
+}
 
 int main(void)
  {
@@ -65,6 +88,7 @@ int main(void)
 
 #if defined(USE_EDHOC)
     LOG_INFO("Selected protocol: EDHOC\n");
+    edhoc_rs_crypto_init();
 #ifdef RUST_PSA
     // Memory buffer for mbedtls
     uint8_t buffer[4096 * 2] = {0};
@@ -76,10 +100,14 @@ int main(void)
     wolfSSL_Debugging_ON();
 #endif
 
+#ifdef EVALUATION_MODE
+    run_evaluation(EVALUATION_TIMES);
+#else
     /* start shell */
     LOG_INFO("All up, running the shell now\n");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
+#endif
 
     return 0;
 }

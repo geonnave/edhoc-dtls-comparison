@@ -96,73 +96,76 @@ int dtls_server(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    // if (sock_dtls_create(sk, &local, NULL, 0, wolfDTLSv1_2_server_method()) != 0) {
-    if (sock_dtls_create(sk, &local, NULL, 0, wolfDTLSv1_3_server_method()) != 0) {
-        LOG(LOG_ERROR, "ERROR: Unable to create DTLS sock\n");
-        return -1;
-    }
+    while (1) {
 
-#ifndef MODULE_WOLFSSL_PSK
-    /* Load certificate file for the DTLS server */
-    if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, server_cert,
-                server_cert_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
-    {
-        LOG(LOG_ERROR, "Failed to load certificate from memory.\n");
-        return -1;
-    }
+        // if (sock_dtls_create(sk, &local, NULL, 0, wolfDTLSv1_2_server_method()) != 0) {
+        if (sock_dtls_create(sk, &local, NULL, 0, wolfDTLSv1_3_server_method()) != 0) {
+            LOG(LOG_ERROR, "ERROR: Unable to create DTLS sock\n");
+            return -1;
+        }
 
-    /* Load the private key */
-    if (wolfSSL_CTX_use_PrivateKey_buffer(sk->ctx, server_key,
-                server_key_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
-    {
-        LOG(LOG_ERROR, "Failed to load private key from memory.\n");
-        return -1;
-    }
-#else
-    wolfSSL_CTX_set_psk_server_callback(sk->ctx, my_psk_server_cb);
-    wolfSSL_CTX_use_psk_identity_hint(sk->ctx, "hint");
-#endif /* MODULE_WOLFSSL_PSK */
+    #ifndef MODULE_WOLFSSL_PSK
+        /* Load certificate file for the DTLS server */
+        if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, server_cert,
+                    server_cert_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
+        {
+            LOG(LOG_ERROR, "Failed to load certificate from memory.\n");
+            return -1;
+        }
 
-    /* Create the DTLS session */
-    ret = sock_dtls_session_create(sk);
-    if (ret < 0)
-    {
-        LOG(LOG_ERROR, "Failed to create DTLS session (err: %s)\n", strerror(-ret));
-        return -1;
-    }
+        /* Load the private key */
+        if (wolfSSL_CTX_use_PrivateKey_buffer(sk->ctx, server_key,
+                    server_key_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
+        {
+            LOG(LOG_ERROR, "Failed to load private key from memory.\n");
+            return -1;
+        }
+    #else
+        wolfSSL_CTX_set_psk_server_callback(sk->ctx, my_psk_server_cb);
+        wolfSSL_CTX_use_psk_identity_hint(sk->ctx, "hint");
+    #endif /* MODULE_WOLFSSL_PSK */
 
-    LOG_DEBUG("Listening on %d\n", SERVER_PORT);
-    while(1) {
-        /* Wait until a new client connects */
-        ret = wolfSSL_accept(sk->ssl);
-        if (ret != SSL_SUCCESS) {
-            if (wolfSSL_get_error(sk->ssl, ret) != WOLFSSL_ERROR_WANT_READ) {
-                sock_dtls_session_destroy(sk);
-                if (sock_dtls_session_create(sk) < 0)
-                    return -1;
+        /* Create the DTLS session */
+        ret = sock_dtls_session_create(sk);
+        if (ret < 0)
+        {
+            LOG(LOG_ERROR, "Failed to create DTLS session (err: %s)\n", strerror(-ret));
+            return -1;
+        }
+
+        LOG_DEBUG("Listening on %d\n", SERVER_PORT);
+        while(1) {
+            /* Wait until a new client connects */
+            ret = wolfSSL_accept(sk->ssl);
+            if (ret != SSL_SUCCESS) {
+                if (wolfSSL_get_error(sk->ssl, ret) != WOLFSSL_ERROR_WANT_READ) {
+                    sock_dtls_session_destroy(sk);
+                    if (sock_dtls_session_create(sk) < 0)
+                        return -1;
+                }
+                continue;
             }
-            continue;
+            LOG_INFO("DTLS: end handshake ok.\n");
+
+            /* Wait until data is received */
+            LOG_DEBUG("Connection accepted\n");
+            ret = wolfSSL_read(sk->ssl, buf, APP_DTLS_BUF_SIZE);
+            if (ret > 0) {
+                buf[ret] = (char)0;
+                LOG_DEBUG("Received '%s'\n", buf);
+            }
+
+            /* Send reply */
+            LOG_DEBUG("Sending 'DTLS OK'...\n");
+            wolfSSL_write(sk->ssl, Test_dtls_string, sizeof(Test_dtls_string));
+
+            /* Cleanup/shutdown */
+            LOG_DEBUG("Closing connection.\n");
+            sock_dtls_session_destroy(sk);
+            sock_dtls_close(sk);
+            LOG_INFO("Connection closed ok.\n");
+            break;
         }
-        LOG_INFO("DTLS: end handshake ok.\n");
-
-        /* Wait until data is received */
-        LOG_DEBUG("Connection accepted\n");
-        ret = wolfSSL_read(sk->ssl, buf, APP_DTLS_BUF_SIZE);
-        if (ret > 0) {
-            buf[ret] = (char)0;
-            LOG_DEBUG("Received '%s'\n", buf);
-        }
-
-        /* Send reply */
-        LOG_DEBUG("Sending 'DTLS OK'...\n");
-        wolfSSL_write(sk->ssl, Test_dtls_string, sizeof(Test_dtls_string));
-
-        /* Cleanup/shutdown */
-        LOG_DEBUG("Closing connection.\n");
-        sock_dtls_session_destroy(sk);
-        sock_dtls_close(sk);
-        LOG_INFO("Connection closed ok.\n");
-        break;
     }
     return 0;
 }
