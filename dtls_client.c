@@ -199,6 +199,8 @@ int dtls_client(int argc, char **argv)
     LOG_DEBUG("Closing connection.\n");
     sock_dtls_session_destroy(sk);
     sock_dtls_close(sk);
+    wolfSSL_free(sk->ssl);
+    wolfSSL_CTX_free(sk->ctx);
     LOG_INFO("Connection closed ok.\n");
     return 0;
 }

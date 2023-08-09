@@ -57,15 +57,14 @@ static const char Test_dtls_string[] = "DTLS OK!";
 
 int dtls_server(int argc, char **argv)
 {
-    char buf[APP_DTLS_BUF_SIZE];
-    int ret;
-    sock_udp_ep_t local = SOCK_IPV6_EP_ANY;
-    local.port = SERVER_PORT;
-
-    (void)argc;
-    (void)argv;
-
     do {
+        char buf[APP_DTLS_BUF_SIZE];
+        int ret;
+        sock_udp_ep_t local = SOCK_IPV6_EP_ANY;
+        local.port = SERVER_PORT;
+
+        (void)argc;
+        (void)argv;
 
         // if (sock_dtls_create(sk, &local, NULL, 0, wolfDTLSv1_2_server_method()) != 0) {
         if (sock_dtls_create(sk, &local, NULL, 0, wolfDTLSv1_3_server_method()) != 0) {
@@ -160,6 +159,8 @@ int dtls_server(int argc, char **argv)
             LOG_DEBUG("Closing connection.\n");
             sock_dtls_session_destroy(sk);
             sock_dtls_close(sk);
+            wolfSSL_free(sk->ssl);
+            wolfSSL_CTX_free(sk->ctx);
             LOG_INFO("Connection closed ok.\n");
             break;
         }
