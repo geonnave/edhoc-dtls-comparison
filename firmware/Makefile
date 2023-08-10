@@ -1,8 +1,8 @@
 # name of your application
 APPLICATION = edhoc-dtls-1_3-comparison
 BOARD ?= nrf52840dk
-RIOTBASE ?= $(CURDIR)/../../../../dev/RIOT-FORK
-EDHOC_RS_DIR ?= $(CURDIR)/../../../../dev/edhoc-rs-FORK
+RIOTBASE ?= $(CURDIR)/../../../dev/RIOT-FORK
+EDHOC_RS_DIR ?= $(CURDIR)/../../../dev/edhoc-rs-FORK
 DEVELHELP ?= 1
 
 ifeq (eval, $(MODE))
