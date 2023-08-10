@@ -1,7 +1,8 @@
 # name of your application
 APPLICATION = edhoc-dtls-1_3-comparison
 BOARD ?= nrf52840dk
-RIOTBASE ?= $(CURDIR)/../../RIOT-FORK
+RIOTBASE ?= $(CURDIR)/../../../../dev/RIOT-FORK
+EDHOC_RS_DIR ?= $(CURDIR)/../../../../dev/edhoc-rs-FORK
 DEVELHELP ?= 1
 
 ifeq (eval, $(MODE))
@@ -16,8 +17,8 @@ CFLAGS += -DDTLS_DEFAULT_PORT=$(DTLS_PORT) -DDTLS_WOLFSSL
 # CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(4*THREAD_STACKSIZE_DEFAULT\)
 CFLAGS += -DTHREAD_STACKSIZE_DEFAULT=16384 -DISR_STACKSIZE=16384 -DTHREAD_STACKSIZE_MAIN=16384
 
-INCLUDES += -I$(CURDIR)/../../edhoc-rs-FORK/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/include
-ARCHIVES += $(CURDIR)/../../edhoc-rs-FORK/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/lib/cortex-m4/hard-float/no-interrupts/libnrf_cc310_0.9.13.a
+INCLUDES += -I$(EDHOC_RS_DIR)/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/include
+ARCHIVES += $(EDHOC_RS_DIR)/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/lib/cortex-m4/hard-float/no-interrupts/libnrf_cc310_0.9.13.a
 
 USEPKG += wolfssl
 USEMODULE += wolfcrypt
@@ -31,8 +32,8 @@ USEMODULE += wolfssl_tls13
 USEMODULE += wolfssl_dtls13
 else
 CFLAGS += -DUSE_EDHOC # flag for the application code
-INCLUDES += -I$(CURDIR)/../../edhoc-rs-FORK/target/include
-ARCHIVES += $(CURDIR)/../../edhoc-rs-FORK/target/thumbv7em-none-eabihf/release/libedhoc_rs.a
+INCLUDES += -I$(EDHOC_RS_DIR)/target/include
+ARCHIVES += $(EDHOC_RS_DIR)/target/thumbv7em-none-eabihf/release/libedhoc_rs.a
 # This is actually only needed in the RUST_CRYPTOCELL310 configuration
 CFLAGS += -DTHREAD_STACKSIZE_DEFAULT=16384 -DISR_STACKSIZE=16384
 CFLAGS += -DCONFIG_GCOAP_RESEND_BUFS_MAX=2

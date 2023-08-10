@@ -1,11 +1,3 @@
-Run with EDHOC:
+# Resource Usage Comparison of EDHOC and DTLS 1.3
 
-```bash
-make all flash term
-```
-
-Run with DTLS 1.3:
-
-```bash
-make all flash term SEC=dtls
-```
+See more in the [firmware](firmware) and [data_analysis](data_analysis) folders.
