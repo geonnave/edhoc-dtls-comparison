@@ -58,7 +58,7 @@ USEMODULE += ztimer_msec
 USEMODULE += shell
 
 # optional and debug modules
-CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic -DLOG_LEVEL=LOG_DEBUG
+CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic -DLOG_LEVEL=LOG_INFO
 USEMODULE += shell_cmds_default
 USEMODULE += ps
 # USEMODULE += wolfssl_debug

@@ -89,6 +89,7 @@ int edhoc_initiator(int argc, char **argv) {
     while(1) {
         // the cryptocell RNG requires a large stack, so we handle the messages in the main thread
         // to avoid having to allocate a larger stack on the coap thread too
+        // note that this has an impact of about 20 ms and about 0.5 mJ
 
         msg_t msg;
         msg_receive(&msg);
