@@ -164,8 +164,8 @@ int dtls_server(int argc, char **argv)
             LOG_INFO("Connection closed ok.\n");
             break;
         }
-    } while (1);
-    // } while (0);
+    // } while (1);
+    } while (0);
     return 0;
 }
 

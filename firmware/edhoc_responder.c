@@ -33,7 +33,6 @@ static ssize_t coap_edhoc_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coa
 {
     (void)ctx;
     LOG_DEBUG("COAP: received new message\n");
-    unsigned method_flag = coap_method2flag(coap_get_code_detail(pdu));
 
     if (responder.state._0 == Start && pdu->payload[0] == 0xF5) {
         MEASURE_START();

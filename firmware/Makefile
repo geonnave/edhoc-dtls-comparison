@@ -5,17 +5,21 @@ RIOTBASE ?= $(CURDIR)/../../../dev/RIOT-FORK
 EDHOC_RS_DIR ?= $(CURDIR)/../../../dev/edhoc-rs-FORK
 DEVELHELP ?= 1
 
+SEC ?= edhoc
+MODE ?= shell
+
 ifeq (eval, $(MODE))
 TIMES ?= 3
 CFLAGS += -DEVALUATION_MODE -DEVALUATION_TIMES=$(TIMES)
 endif
 
+# cryptocell310's RNG requires a large stack size
+CFLAGS += -DTHREAD_STACKSIZE_MAIN=16384 -DGCOAP_STACK_SIZE=8192+512
+
 ifeq (dtls, $(SEC))
 CFLAGS += -DUSE_DTLS13 # flag for the application code
 CFLAGS += -DDTLS_DEFAULT_PORT=$(DTLS_PORT) -DDTLS_WOLFSSL
-# A larger stack size is required if using ECC or RSA
 # CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(4*THREAD_STACKSIZE_DEFAULT\)
-CFLAGS += -DTHREAD_STACKSIZE_DEFAULT=16384 -DISR_STACKSIZE=16384 -DTHREAD_STACKSIZE_MAIN=16384
 
 INCLUDES += -I$(EDHOC_RS_DIR)/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/include
 ARCHIVES += $(EDHOC_RS_DIR)/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/lib/cortex-m4/hard-float/no-interrupts/libnrf_cc310_0.9.13.a
@@ -25,7 +29,6 @@ USEMODULE += wolfcrypt
 USEMODULE += wolfcrypt_ecc
 USEMODULE += wolfssl
 USEMODULE += wolfcrypt_cryptocell
-# USEMODULE += wolfssl_debug
 USEMODULE += wolfssl_rpk
 USEMODULE += wolfssl_dtls
 USEMODULE += wolfssl_tls13
@@ -34,8 +37,6 @@ else
 CFLAGS += -DUSE_EDHOC # flag for the application code
 INCLUDES += -I$(EDHOC_RS_DIR)/target/include
 ARCHIVES += $(EDHOC_RS_DIR)/target/thumbv7em-none-eabihf/release/libedhoc_rs.a
-# This is actually only needed in the RUST_CRYPTOCELL310 configuration
-CFLAGS += -DTHREAD_STACKSIZE_DEFAULT=16384 -DISR_STACKSIZE=16384
 CFLAGS += -DCONFIG_GCOAP_RESEND_BUFS_MAX=2
 
 USEMODULE += gcoap
@@ -51,19 +52,21 @@ USEMODULE += sock_udp
 
 # Modules used for the evauluation
 FEATURES_OPTIONAL += periph_gpio
-USEMODULE += periph_gpio_irq
 USEMODULE += ztimer
 USEMODULE += ztimer_msec
 
-# optional and debug modules
-CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic -DLOG_LEVEL=LOG_INFO
-USEMODULE += od
-USEMODULE += fmt
 USEMODULE += shell
-USEMODULE += netutils
-USEMODULE += random
+
+# optional and debug modules
+CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic -DLOG_LEVEL=LOG_DEBUG
 USEMODULE += shell_cmds_default
 USEMODULE += ps
-USEMODULE += gnrc_icmpv6_echo
+# USEMODULE += wolfssl_debug
+
+# USEMODULE += od
+# USEMODULE += fmt
+# USEMODULE += netutils
+# USEMODULE += random
+# USEMODULE += gnrc_icmpv6_echo
 
 include $(RIOTBASE)/Makefile.include
