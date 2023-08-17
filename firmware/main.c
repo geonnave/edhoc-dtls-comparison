@@ -28,6 +28,16 @@ extern void mbedtls_memory_buffer_alloc_init(uint8_t *buf, size_t len);
 #include "wolfssl/ssl.h"
 extern int dtls_client(int argc, char **argv);
 extern int dtls_server(int argc, char **argv);
+
+#ifdef MODULE_WOLFSSL_STATIC_MEMORY
+#define WOLFSSL_GENERAL_MEMORY_MAX (80*1024)
+#define WOLFSSL_IO_MEMORY_MAX (60*1024)
+uint8_t wolfssl_general_memory[WOLFSSL_GENERAL_MEMORY_MAX];
+size_t wolfssl_general_memory_sz = WOLFSSL_GENERAL_MEMORY_MAX;
+uint8_t wolfssl_io_memory[WOLFSSL_IO_MEMORY_MAX];
+size_t wolfssl_io_memory_sz = WOLFSSL_IO_MEMORY_MAX;
+#endif
+
 #ifndef EVALUATION_MODE
 static const shell_command_t shell_commands[] = {
     { "dtlsc", "Start a DTLS client", dtls_client },
@@ -96,7 +106,11 @@ int main(void)
 #endif
 #elif defined(USE_DTLS13)
     LOG_INFO("Selected protocol: DTLS 1.3\n");
-    wolfSSL_Init();
+    int ret = wolfSSL_Init();
+    if (ret != WOLFSSL_SUCCESS) {
+        LOG_ERROR("wolfSSL_Init failed: %d\n", ret);
+        return -1;
+    }
     wolfSSL_Debugging_ON();
 #endif
 

@@ -49,6 +49,13 @@ unsigned int client_rpk_priv_len = 121;
 static sock_tls_t skv;
 static sock_tls_t *sk = &skv;
 
+#ifdef MODULE_WOLFSSL_STATIC_MEMORY
+extern uint8_t wolfssl_general_memory[];
+extern size_t wolfssl_general_memory_sz;
+extern uint8_t wolfssl_io_memory[];
+extern size_t wolfssl_io_memory_sz;
+#endif
+
 static void usage(const char *cmd_name)
 {
     LOG_ERROR("Usage: %s <server-address>\n", cmd_name);
@@ -98,7 +105,13 @@ int dtls_client(int argc, char **argv)
 
     MEASURE_START();
 
+#ifdef MODULE_WOLFSSL_STATIC_MEMORY
+    if (sock_dtls_create_static(sk, &local, &remote, 0, wolfDTLSv1_3_client_method_ex,
+        wolfssl_general_memory, wolfssl_general_memory_sz, wolfssl_io_memory, wolfssl_io_memory_sz
+    ) != 0) {
+#else
     if (sock_dtls_create(sk, &local, &remote, 0, wolfDTLSv1_3_client_method()) != 0) {
+#endif
         LOG_ERROR("ERROR: Unable to create DTLS sock\n");
         return -1;
     }
@@ -180,8 +193,8 @@ int dtls_client(int argc, char **argv)
 
     /* Clean up and exit. */
     LOG_DEBUG("Closing connection.\n");
-    sock_dtls_session_destroy(sk);
     sock_dtls_close(sk);
+    sock_dtls_session_destroy(sk);
     wolfSSL_free(sk->ssl);
     wolfSSL_CTX_free(sk->ctx);
     LOG_INFO("Connection closed ok.\n");
