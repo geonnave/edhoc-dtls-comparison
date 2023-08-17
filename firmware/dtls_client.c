@@ -18,9 +18,6 @@ extern void MEASURE_STOP(void);
 #define SERVER_PORT 11111
 #define APP_DTLS_BUF_SIZE 64
 
-extern const unsigned char server_cert[];
-extern const unsigned long server_cert_len;
-
 // xxd -i wolfssl/certs/ecc-client-keyPub.der
 unsigned char client_rpk[] = {
   0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02,
@@ -101,26 +98,13 @@ int dtls_client(int argc, char **argv)
 
     MEASURE_START();
 
-    // if (sock_dtls_create(sk, &local, &remote, 0, wolfDTLSv1_2_client_method()) != 0) {
     if (sock_dtls_create(sk, &local, &remote, 0, wolfDTLSv1_3_client_method()) != 0) {
         LOG_ERROR("ERROR: Unable to create DTLS sock\n");
         return -1;
     }
 
-//     /* Disable certificate validation from the client side */
-//     wolfSSL_CTX_set_verify(sk->ctx, SSL_VERIFY_NONE, 0);
-
-//     /* Load certificate file for the DTLS client */
-//     if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, server_cert,
-//                 server_cert_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
-//     {
-//         LOG_ERROR("Error loading cert buffer\n");
-//         return -1;
-//     }
-
-    /* Disable certificate validation from the client side */
+    /* Disable certificate validation */
     wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
-    // wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_PEER, NULL);
 
     /* Load RPK for the DTLS client */
     if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, client_rpk,
@@ -144,7 +128,6 @@ int dtls_client(int argc, char **argv)
 
     char ctype[] = {WOLFSSL_CERT_TYPE_RPK};
     char stype[] = {WOLFSSL_CERT_TYPE_RPK};
-    // char stype[] = {WOLFSSL_CERT_TYPE_X509};
     if (wolfSSL_set_client_cert_type(sk->ssl, ctype, 1) != SSL_SUCCESS)
     {
         LOG_ERROR("Failed to set client cert type.\n");

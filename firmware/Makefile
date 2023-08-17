@@ -18,9 +18,7 @@ CFLAGS += -DTHREAD_STACKSIZE_MAIN=16384 -DGCOAP_STACK_SIZE=8192+512
 
 ifeq (dtls, $(SEC))
 CFLAGS += -DUSE_DTLS13 # flag for the application code
-CFLAGS += -DDTLS_DEFAULT_PORT=$(DTLS_PORT) -DDTLS_WOLFSSL
-# CFLAGS += -DTHREAD_STACKSIZE_MAIN=\(4*THREAD_STACKSIZE_DEFAULT\)
-
+CFLAGS += -DDTLS_WOLFSSL
 INCLUDES += -I$(EDHOC_RS_DIR)/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/include
 ARCHIVES += $(EDHOC_RS_DIR)/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/lib/cortex-m4/hard-float/no-interrupts/libnrf_cc310_0.9.13.a
 
@@ -35,9 +33,9 @@ USEMODULE += wolfssl_tls13
 USEMODULE += wolfssl_dtls13
 else
 CFLAGS += -DUSE_EDHOC # flag for the application code
+CFLAGS += -DCONFIG_GCOAP_RESEND_BUFS_MAX=2
 INCLUDES += -I$(EDHOC_RS_DIR)/target/include
 ARCHIVES += $(EDHOC_RS_DIR)/target/thumbv7em-none-eabihf/release/libedhoc_rs.a
-CFLAGS += -DCONFIG_GCOAP_RESEND_BUFS_MAX=2
 
 USEMODULE += gcoap
 endif
@@ -57,12 +55,13 @@ USEMODULE += ztimer_msec
 
 USEMODULE += shell
 
-# optional and debug modules
-CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic -DLOG_LEVEL=LOG_INFO
-USEMODULE += shell_cmds_default
-USEMODULE += ps
+# debug configurations
+CFLAGS += -DLOG_LEVEL=LOG_INFO
 # USEMODULE += wolfssl_debug
 
+CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic
+USEMODULE += shell_cmds_default
+USEMODULE += ps
 # USEMODULE += od
 # USEMODULE += fmt
 # USEMODULE += netutils

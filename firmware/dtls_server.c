@@ -15,10 +15,6 @@
 
 #define SERVER_PORT 11111
 #define DEBUG 1
-extern const unsigned char server_cert[];
-extern const unsigned char server_key[];
-extern unsigned int server_cert_len;
-extern unsigned int server_key_len;
 
 // xxd -i wolfssl/certs/ecc-keyPub.der
 unsigned char server_rpk[] = {
@@ -66,27 +62,10 @@ int dtls_server(int argc, char **argv)
         (void)argc;
         (void)argv;
 
-        // if (sock_dtls_create(sk, &local, NULL, 0, wolfDTLSv1_2_server_method()) != 0) {
         if (sock_dtls_create(sk, &local, NULL, 0, wolfDTLSv1_3_server_method()) != 0) {
             LOG_ERROR("ERROR: Unable to create DTLS sock\n");
             return -1;
         }
-
-        // /* Load certificate file for the DTLS server */
-        // if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, server_cert,
-        //             server_cert_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
-        // {
-        //     LOG_ERROR("Failed to load certificate from memory.\n");
-        //     return -1;
-        // }
-
-        // /* Load the private key */
-        // if (wolfSSL_CTX_use_PrivateKey_buffer(sk->ctx, server_key,
-        //             server_key_len, SSL_FILETYPE_ASN1 ) != SSL_SUCCESS)
-        // {
-        //     LOG_ERROR("Failed to load private key from memory.\n");
-        //     return -1;
-        // }
 
         // using RPK
         wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
@@ -117,7 +96,6 @@ int dtls_server(int argc, char **argv)
 
         char ctype[] = {WOLFSSL_CERT_TYPE_RPK};
         char stype[] = {WOLFSSL_CERT_TYPE_RPK};
-        // char stype[] = {WOLFSSL_CERT_TYPE_X509};
         if (wolfSSL_set_client_cert_type(sk->ssl, ctype, 1) != SSL_SUCCESS)
         {
             LOG_ERROR("Failed to set client cert type.\n");
