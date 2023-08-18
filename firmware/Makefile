@@ -1,12 +1,12 @@
-# name of your application
-APPLICATION = edhoc-dtls-1_3-comparison
-BOARD ?= nrf52840dk
 RIOTBASE ?= $(CURDIR)/../../../dev/RIOT-FORK
 EDHOC_RS_DIR ?= $(CURDIR)/../../../dev/edhoc-rs-FORK
+BOARD ?= nrf52840dk
 DEVELHELP ?= 1
 
 SEC ?= edhoc
 MODE ?= shell
+
+APPLICATION = edhoc-dtls-1_3-comparison-$(SEC)-$(MODE)
 
 ifeq (eval, $(MODE))
 TIMES ?= 3
