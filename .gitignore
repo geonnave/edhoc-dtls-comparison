@@ -4,3 +4,4 @@ results
 *.swp
 .ipynb_checkpoints
 *.csv
+*.pdf
