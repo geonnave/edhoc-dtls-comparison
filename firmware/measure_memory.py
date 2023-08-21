@@ -1,11 +1,14 @@
-import subprocess, rich, serial, re, sys, datetime
+import subprocess, rich, serial, re, sys, datetime, os
 import pandas as pd
 
 if len(sys.argv) < 2:
     print(f"Please provide an output folder, e.g. python3 {sys.argv[0]} ../data_analysis/results")
     exit(1)
-now = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
-output_file = sys.argv[1] + f"/memory-{now}.csv"
+if os.path.isdir(sys.argv[1]):
+    now = datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+    output_file = sys.argv[1] + f"/memory-{now}.csv"
+else:
+    output_file = sys.argv[1]
 print(f"Will write to {output_file}")
 
 def run_cmd(cmd):
@@ -28,7 +31,8 @@ def get_memory_sizes(res):
         # rich.print(res_dict)
         return res_dict
     res_dict = get_dict(res)
-    return {"flash": res_dict["text"] + res_dict["data"], "ram-static": res_dict["data"] + res_dict["bss"]}
+    # return {"flash": res_dict["text"] + res_dict["data"], "ram-static": res_dict["data"] + res_dict["bss"]}
+    return res_dict
 
 def run_riot_shell(cmd, port):
     print(f"Will run at {port}: {cmd}")
@@ -60,9 +64,10 @@ mode = "shell"
 
 data = {
     "protocol": [],
-    "flash": [],
-    "ram-static": [],
-    "ram-stack": [],
+    "text": [],
+    "data": [],
+    "bss": [],
+    "stack": [],
 }
 
 boards = [
@@ -83,8 +88,9 @@ for protocol in protocols:
     sizes = get_memory_sizes(res)
     rich.print(f"Sizes:", sizes)
     data["protocol"].append(protocol)
-    data["flash"].append(sizes["flash"])
-    data["ram-static"].append(sizes["ram-static"])
+    data["text"].append(sizes["text"])
+    data["data"].append(sizes["data"])
+    data["bss"].append(sizes["bss"])
 
     # Step 2 -- flash
     run_cmd(f"DEBUG_ADAPTER_ID={boards[0]['id']} {cmd} flash")
@@ -96,7 +102,7 @@ for protocol in protocols:
     # Step 3 -- run and measure stack
     stack_size = get_stack_size(boards, protocol)
 
-    data["ram-stack"].append(stack_size)
+    data["stack"].append(stack_size)
     # break
 
 df = pd.DataFrame(data)
