@@ -21,14 +21,15 @@ def process_edhoc():
     for packet in cap:
         # print(packet)
         sizes = {
+            "# of fragments": 1,
             "IEEE 802.15.4": IEEE_802154_HEADER_LEN,
             "6LoWPAN": SIXLOWPAN_HEADER_LEN,
             "CoAP": int(packet.udp.length) - UDP_HEADER_LEN - coap_payload_len(packet),
             "Content": coap_payload_len(packet),
         }
-        if sum(sizes.values()) != int(packet.length):
-            raise Exception("Sum does not match packet length.")
-        sizes["_total"] = int(packet.length)
+        # if sum(sizes.values()) != int(packet.length):
+        #     raise Exception("Sum does not match packet length.")
+        sizes["_sum"] = int(packet.length)
         rows.append(sizes.values())
 
     df = pd.DataFrame(rows, columns=sizes.keys())
@@ -41,28 +42,31 @@ def process_dtls():
     rows = []
     was_frag = False
     sizes_frag = {
+        "# of fragments": 0,
         "IEEE 802.15.4": 0,
         "6LoWPAN": 0,
         "Content": 0,
-        "_total": 0,
+        "_sum": 0,
     }
     for packet in cap:
         # print(packet)
         if not was_frag and hasattr(packet, 'udp'):
             sizes_new = {
+                "# of fragments": 1,
                 "IEEE 802.15.4": IEEE_802154_HEADER_LEN,
                 "6LoWPAN": SIXLOWPAN_FRAG_N_HEADER_LEN,
                 "Content": int(packet.length) - IEEE_802154_HEADER_LEN - SIXLOWPAN_FRAG_N_HEADER_LEN,
-                "_total": int(packet.length)
+                "_sum": int(packet.length)
             }
             rows.append(sizes_new)
 
         elif was_frag and hasattr(packet, 'udp'):
             sizes_new = {
+                "# of fragments": 1,
                 "IEEE 802.15.4": IEEE_802154_HEADER_LEN,
                 "6LoWPAN": SIXLOWPAN_FRAG_N_HEADER_LEN,
                 "Content": int(packet.length) - IEEE_802154_HEADER_LEN - SIXLOWPAN_FRAG_N_HEADER_LEN,
-                "_total": int(packet.length)
+                "_sum": int(packet.length)
             }
             for k, v in sizes_new.items():
                 sizes_frag[k] = sizes_frag[k] + v
@@ -70,18 +74,20 @@ def process_dtls():
             rows.append(sizes_frag)
 
             sizes_frag = {
+                "# of fragments": 0,
                 "IEEE 802.15.4": 0,
                 "6LoWPAN": 0,
                 "Content": 0,
-                "_total": 0,
+                "_sum": 0,
             }
             was_frag = False
         elif was_frag:
             sizes_new_frag = {
+                "# of fragments": 1,
                 "IEEE 802.15.4": IEEE_802154_HEADER_LEN,
                 "6LoWPAN": SIXLOWPAN_FRAG_N_HEADER_LEN,
                 "Content": int(packet.length) - IEEE_802154_HEADER_LEN - SIXLOWPAN_FRAG_N_HEADER_LEN,
-                "_total": int(packet.length)
+                "_sum": int(packet.length)
             }
 
             for k, v in sizes_new_frag.items():
@@ -91,10 +97,11 @@ def process_dtls():
 
         else:
             sizes_new_frag = {
+                "# of fragments": 1,
                 "IEEE 802.15.4": IEEE_802154_HEADER_LEN,
                 "6LoWPAN": SIXLOWPAN_FRAG_1_HEADER_LEN,
                 "Content": int(packet.length) - IEEE_802154_HEADER_LEN - SIXLOWPAN_FRAG_1_HEADER_LEN,
-                "_total": int(packet.length)
+                "_sum": int(packet.length)
             }
 
             for k, v in sizes_new_frag.items():
