@@ -17,7 +17,10 @@ endif
 CFLAGS += -DTHREAD_STACKSIZE_MAIN=16384 -DGCOAP_STACK_SIZE=8192+512
 
 ifeq (dtls, $(SEC))
-CFLAGS += -DUSE_DTLS13 # flag for the application code
+ # flags for the application code
+CFLAGS += -DUSE_DTLS13
+CFLAGS += -DDTLS_RPK # or -DDTLS_CERT
+
 CFLAGS += -DDTLS_WOLFSSL
 INCLUDES += -I$(EDHOC_RS_DIR)/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/include
 ARCHIVES += $(EDHOC_RS_DIR)/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/lib/cortex-m4/hard-float/no-interrupts/libnrf_cc310_0.9.13.a

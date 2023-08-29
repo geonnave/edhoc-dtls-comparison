@@ -1,3 +1,6 @@
+#define EDHOC_CREDS_H
+#ifdef EDHOC_CREDS_H
+
 #include <stdint.h>
 
 static const uint8_t ID_CRED_I[] = "a104412b";
@@ -8,3 +11,5 @@ static const uint8_t CRED_R[] = "A2026008A101A5010202410A2001215820BBC34960526EA
 static const uint8_t R[] = "72cc4761dbd4c78f758931aa589d348d1ef874a7e303ede2f140dcf3e6aa4aac";
 static const uint8_t I[] = "fb13adeb6518cee5f88417660841142e830a81fe334380a953406a1305e8706b";
 static const uint8_t G_R[] = "bbc34960526ea4d32e940cad2a234148ddc21791a12afbcbac93622046dd44f0";
+
+#endif // EDHOC_CREDS_H
