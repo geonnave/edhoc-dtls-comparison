@@ -6,6 +6,8 @@ DEVELHELP ?= 1
 SEC ?= edhoc
 MODE ?= shell
 
+CFLAGS += -DHANDSHAKE_ONLY=1
+
 APPLICATION = edhoc-dtls-1_3-comparison-$(SEC)-$(MODE)
 
 ifeq (eval, $(MODE))
@@ -16,10 +18,16 @@ endif
 # cryptocell310's RNG requires a large stack size
 CFLAGS += -DTHREAD_STACKSIZE_MAIN=16384 -DGCOAP_STACK_SIZE=8192+512
 
-ifeq (dtls, $(SEC))
- # flags for the application code
+ifeq ($(findstring dtls,$(SEC)),dtls)
+
+ifeq (dtls_rpk, $(SEC))
+CFLAGS += -DDTLS_RPK
+else ifeq (dtls_cert, $(SEC))
+CFLAGS += -DDTLS_CERT
+endif
+
+# flags for the application code
 CFLAGS += -DUSE_DTLS13
-CFLAGS += -DDTLS_RPK # or -DDTLS_CERT
 
 CFLAGS += -DDTLS_WOLFSSL
 INCLUDES += -I$(EDHOC_RS_DIR)/crypto/edhoc-crypto-cryptocell310-sys/vendor/nrf_cc310/include

@@ -153,6 +153,7 @@ int dtls_client(int argc, char **argv)
 
     MEASURE_STOP();
 
+#ifdef HANDSHAKE_ONLY
     /* set remote endpoint */
     sock_dtls_set_endpoint(sk, &remote);
 
@@ -166,6 +167,7 @@ int dtls_client(int argc, char **argv)
     } while (ret <= 0);
     buf[ret] = (char)0;
     LOG_DEBUG("Received: '%s'\n", buf);
+#endif
 
     /* Clean up and exit. */
     LOG_DEBUG("Closing connection.\n");

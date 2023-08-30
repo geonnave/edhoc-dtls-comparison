@@ -110,6 +110,7 @@ int dtls_server(int argc, char **argv)
             }
             LOG_INFO("DTLS: end handshake ok.\n");
 
+#ifdef HANDSHAKE_ONLY
             /* Wait until data is received */
             LOG_DEBUG("Connection accepted\n");
             ret = wolfSSL_read(sk->ssl, buf, APP_DTLS_BUF_SIZE);
@@ -121,6 +122,7 @@ int dtls_server(int argc, char **argv)
             /* Send reply */
             LOG_DEBUG("Sending 'DTLS OK'...\n");
             wolfSSL_write(sk->ssl, Test_dtls_string, sizeof(Test_dtls_string));
+#endif
 
             /* Cleanup/shutdown */
             LOG_DEBUG("Closing connection.\n");
