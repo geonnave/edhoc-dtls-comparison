@@ -3,8 +3,10 @@ import pandas as pd
 
 edhoc_pcap = './results/edhoc.pcap'
 edhoc_csv = './results/edhoc_pcap.csv'
-dtls_pcap = './results/dtls.pcap'
-dtls_csv = './results/dtls_pcap.csv'
+dtls_rpk_pcap = './results/dtls_rpk.pcap'
+dtls_rpk_csv = './results/dtls_rpk_pcap.csv'
+dtls_cert_pcap = './results/dtls_cert.pcap'
+dtls_cert_csv = './results/dtls_cert_pcap.csv'
 
 IEEE_802154_HEADER_LEN = 2+1+2+8+8
 SIXLOWPAN_HEADER_LEN = 2+1+2+2+2
@@ -37,8 +39,8 @@ def process_edhoc():
     df.to_csv(edhoc_csv, index=False)
     print(f"Written to {edhoc_csv}\n")
 
-def process_dtls():
-    cap = pyshark.FileCapture(dtls_pcap)
+def process_dtls(pcap_file, csv_file):
+    cap = pyshark.FileCapture(pcap_file, display_filter='!icmpv6')
     rows = []
     was_frag = False
     sizes_frag = {
@@ -111,8 +113,9 @@ def process_dtls():
 
     df = pd.DataFrame(rows, columns=sizes_frag.keys())
     print(df)
-    df.to_csv(dtls_csv, index=False)
-    print(f"Written to {dtls_csv}\n")
+    df.to_csv(csv_file, index=False)
+    print(f"Written to {csv_file}\n")
 
 process_edhoc()
-process_dtls()
+process_dtls(dtls_rpk_pcap, dtls_rpk_csv)
+process_dtls(dtls_cert_pcap, dtls_cert_csv)
