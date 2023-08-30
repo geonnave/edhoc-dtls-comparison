@@ -58,7 +58,7 @@ def get_stack_size(boards, protocol):
 
     return int(ps_match.group(0)[1:-1])
 
-protocols = ["edhoc", "dtls"]
+protocols = ["edhoc", "dtls_rpk", "dtls_cert"]
 # modes = ["shell", "eval"]
 mode = "shell"
 
@@ -72,12 +72,18 @@ data = {
 
 boards = [
     { # initiator / client,
-        "id": "000683380505", "port": "/dev/ttyACM0",
-        "edhoc_cmd": "edhoci", "dtls_cmd": "dtlsc fe80::b834:d60b:796f:8de0",
+        "id": "000683380505",
+        "port": "/dev/ttyACM0",
+        "edhoc_cmd": "edhoci",
+        "dtls_rpk_cmd": "dtlsc fe80::b834:d60b:796f:8de0",
+        "dtls_cert_cmd": "dtlsc fe80::b834:d60b:796f:8de0",
     },
     { # responder / server,
-        "id": "001050283894", "port": "/dev/ttyACM1",
-        "edhoc_cmd": "edhocr", "dtls_cmd": "dtlss",
+        "id": "001050283894",
+        "port": "/dev/ttyACM1",
+        "edhoc_cmd": "edhocr",
+        "dtls_rpk_cmd": "dtlss",
+        "dtls_cert_cmd": "dtlss",
     },
 ]
 
