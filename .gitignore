@@ -6,3 +6,4 @@ results
 *.csv
 *.pdf
 *.html
+__pycache__

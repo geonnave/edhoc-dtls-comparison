@@ -1,0 +1,6 @@
+pandas
+matplotlib
+pyshark
+dataclasses
+dataclasses_json
+rich
