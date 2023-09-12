@@ -1,0 +1,30 @@
+2023-08-30 15:18:14,364 # DTLS: begin handshake.
+2023-08-30 15:18:14,462 # connecting to server...
+2023-08-30 15:18:14,535 # udp: send size: 202
+2023-08-30 15:18:14,547 # connect state: CLIENT_HELLO_SENT
+2023-08-30 15:18:14,614 # udp: receive size: 152
+2023-08-30 15:18:14,632 # processing server hello
+2023-08-30 15:18:14,663 # connect state: HELLO_AGAIN
+2023-08-30 15:18:14,715 # udp: send size: 275
+2023-08-30 15:18:14,727 # connect state: HELLO_AGAIN_REPLY
+2023-08-30 15:18:14,881 # udp: receive size: 152
+2023-08-30 15:18:14,900 # processing server hello
+2023-08-30 15:18:14,986 # udp: receive size: 44
+2023-08-30 15:18:15,039 # processing encrypted extensions
+2023-08-30 15:18:15,120 # udp: receive size: 903
+2023-08-30 15:18:15,162 # udp: receive size: 117
+2023-08-30 15:18:15,178 # processing certificate
+2023-08-30 15:18:15,203 # udp: receive size: 74
+2023-08-30 15:18:15,304 # processing certificate verify
+2023-08-30 15:18:15,388 # processing finished
+2023-08-30 15:18:15,430 # connect state: FIRST_REPLY_DONE
+2023-08-30 15:18:15,432 # connect state: FIRST_REPLY_FIRST
+2023-08-30 15:18:15,435 # connect state: FIRST_REPLY_SECOND
+2023-08-30 15:18:15,438 # connect state: FIRST_REPLY_THIRD
+2023-08-30 15:18:15,441 # connect state: FIRST_REPLY_FOURTH
+2023-08-30 15:18:15,475 # udp: send size: 74
+2023-08-30 15:18:15,475 # udp: send size: 74
+2023-08-30 15:18:15,497 # connect state: WAIT_FINISHED_ACK
+2023-08-30 15:18:15,556 # udp: receive size: 48
+2023-08-30 15:18:15,572 # connect state: FINISHED_DONE
+2023-08-30 15:18:15,582 # DTLS: end handshake ok.

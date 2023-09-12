@@ -5,6 +5,11 @@ from dataclasses import dataclass, field, asdict, fields
 from dataclasses_json import dataclass_json, config
 from typing import List
 
+if len(sys.argv) < 2:
+    data_folder = "./results"
+else:
+    data_folder = sys.argv[1]
+
 IEEE_802154_HEADER_LEN = 2+1+2+8+8
 SIXLOWPAN_HEADER_LEN = 2+1+2+2+2
 SIXLOWPAN_FRAG_1_HEADER_LEN = SIXLOWPAN_HEADER_LEN + 4
@@ -158,7 +163,7 @@ def process_messages(pcap_files):
 
 if __name__ == '__main__':
     process_messages([
-        './results/edhoc.pcap',
-        './results/dtls_rpk.pcap',
-        './results/dtls_cert.pcap',
+        f'./{data_folder}/edhoc.pcap',
+        f'./{data_folder}/dtls_rpk.pcap',
+        f'./{data_folder}/dtls_cert.pcap',
     ])
