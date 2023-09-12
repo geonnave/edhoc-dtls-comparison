@@ -88,12 +88,13 @@ class Message:
 
 def df_sizes(pcap_file, messages: List[Message]):
     csv_file = pcap_file.replace('.pcap', '_pcap.csv')
-    columns = ["_fragments", "IEEE 802.15.4", "6LoWPAN", "Content", "_sum"]
+    columns = ["_fragments", "IEEE 802.15.4", "6LoWPAN", "CoAP", "Content", "_sum"]
     rows = [
         [
             len(msg.packets),
             msg.get_sum('ieee_802154'),
             msg.get_sum('sixlowpan'),
+            msg.get_sum('coap'),
             msg.get_sum('payloads'),
             sum(msg.raw_lens()),
         ]
@@ -151,7 +152,7 @@ def process_messages(pcap_files):
             messages = process_edhoc_messages(pcap_file)
         else:
             messages = process_dtls_messages(pcap_file)
-        rich.print(messages)
+        # rich.print(messages)
         df_sizes(pcap_file, messages)
         save_messages_dict_file(pcap_file, messages)
 
