@@ -35,10 +35,16 @@ static void usage(const char *cmd_name)
     LOG_ERROR("Usage: %s <server-address>\n", cmd_name);
 }
 
+static int myVerify(int preverify, WOLFSSL_X509_STORE_CTX* store)
+{
+    (void)preverify;
+    (void)store;
+    return 1;
+}
+
 int dtls_client(int argc, char **argv)
 {
     int ret = 0;
-    char buf[APP_DTLS_BUF_SIZE] = "Hello from DTLS client!";
     char *iface;
     char *addr_str;
     int connect_timeout = 0;
@@ -91,7 +97,8 @@ int dtls_client(int argc, char **argv)
     }
 
     /* Disable certificate validation */
-    wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
+    // wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
+    wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_PEER, myVerify);
 
     /* Load Credential for the DTLS client */
     if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, client_cred,
@@ -108,6 +115,8 @@ int dtls_client(int argc, char **argv)
         LOG_ERROR("Failed to load private key from memory.\n");
         return -1;
     }
+
+    // wolfSSL_CTX_mutual_auth(sk->ctx, 1);
 
     if (sock_dtls_session_create(sk) < 0) // calls wolfSSL_new(sk->ctx)
         return -1;
@@ -153,7 +162,9 @@ int dtls_client(int argc, char **argv)
 
     MEASURE_STOP();
 
-#ifdef HANDSHAKE_ONLY
+#ifndef HANDSHAKE_ONLY
+    char buf[APP_DTLS_BUF_SIZE] = "Hello from DTLS client!";
+
     /* set remote endpoint */
     sock_dtls_set_endpoint(sk, &remote);
 

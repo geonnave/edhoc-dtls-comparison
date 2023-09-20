@@ -21,8 +21,6 @@
 static sock_tls_t skv;
 static sock_tls_t *sk = &skv;
 
-static const char Test_dtls_string[] = "DTLS OK!";
-
 #define APP_DTLS_BUF_SIZE 64
 
 #ifdef MODULE_WOLFSSL_STATIC_MEMORY
@@ -31,6 +29,13 @@ extern size_t wolfssl_general_memory_sz;
 extern uint8_t wolfssl_io_memory[];
 extern size_t wolfssl_io_memory_sz;
 #endif
+
+static int myVerify(int preverify, WOLFSSL_X509_STORE_CTX* store)
+{
+    (void)preverify;
+    (void)store;
+    return 1;
+}
 
 int dtls_server(int argc, char **argv)
 {
@@ -55,7 +60,8 @@ int dtls_server(int argc, char **argv)
         }
 
         // disable server verify
-        wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
+        // wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
+        wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_PEER, myVerify);
 
         /* Load credential for the DTLS server */
         if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, server_cred,
@@ -72,6 +78,8 @@ int dtls_server(int argc, char **argv)
             LOG_ERROR("Failed to load private key from memory.\n");
             return -1;
         }
+
+        wolfSSL_CTX_mutual_auth(sk->ctx, 1);
 
         /* Create the DTLS session */
         ret = sock_dtls_session_create(sk);
@@ -110,7 +118,8 @@ int dtls_server(int argc, char **argv)
             }
             LOG_INFO("DTLS: end handshake ok.\n");
 
-#ifdef HANDSHAKE_ONLY
+#ifndef HANDSHAKE_ONLY
+            const char Test_dtls_string[] = "DTLS OK!";
             /* Wait until data is received */
             LOG_DEBUG("Connection accepted\n");
             ret = wolfSSL_read(sk->ssl, buf, APP_DTLS_BUF_SIZE);

@@ -30,8 +30,8 @@ extern int dtls_client(int argc, char **argv);
 extern int dtls_server(int argc, char **argv);
 
 #ifdef MODULE_WOLFSSL_STATIC_MEMORY
-#define WOLFSSL_GENERAL_MEMORY_MAX (80*1024)
-#define WOLFSSL_IO_MEMORY_MAX (60*1024)
+#define WOLFSSL_GENERAL_MEMORY_MAX (100*1024)
+#define WOLFSSL_IO_MEMORY_MAX (80*1024)
 uint8_t wolfssl_general_memory[WOLFSSL_GENERAL_MEMORY_MAX];
 size_t wolfssl_general_memory_sz = WOLFSSL_GENERAL_MEMORY_MAX;
 uint8_t wolfssl_io_memory[WOLFSSL_IO_MEMORY_MAX];
