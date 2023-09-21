@@ -24,6 +24,10 @@ ifeq (dtls_rpk, $(SEC))
 CFLAGS += -DDTLS_RPK
 else ifeq (dtls_cert, $(SEC))
 CFLAGS += -DDTLS_CERT
+else ifeq (dtls_rpk_mutual, $(SEC))
+CFLAGS += -DDTLS_RPK -DDTLS_MUTUAL_AUTH
+else ifeq (dtls_cert_mutual, $(SEC))
+CFLAGS += -DDTLS_CERT -DDTLS_MUTUAL_AUTH
 endif
 
 # flags for the application code

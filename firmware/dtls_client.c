@@ -96,9 +96,15 @@ int dtls_client(int argc, char **argv)
         return -1;
     }
 
-    /* Disable certificate validation */
-    // wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
+#ifdef DTLS_MUTUAL_AUTH
+    /* Verify peer, but do not verify CA */
     wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_PEER, myVerify);
+    LOG_DEBUG("DTLS: mutual authentication ON\n");
+#else
+    /* Disable cert verification */
+    wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
+    LOG_DEBUG("DTLS: mutual authentication OFF\n");
+#endif
 
     /* Load Credential for the DTLS client */
     if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, client_cred,

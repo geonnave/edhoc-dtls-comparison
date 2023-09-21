@@ -59,9 +59,16 @@ int dtls_server(int argc, char **argv)
             return -1;
         }
 
-        // disable server verify
-        // wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
+#ifdef DTLS_MUTUAL_AUTH
+        /* Verify peer, but do not verify CA */
         wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_PEER, myVerify);
+        wolfSSL_CTX_mutual_auth(sk->ctx, 1);
+        LOG_DEBUG("DTLS: mutual authentication ON\n");
+#else
+        /* Disable cert verification */
+        wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
+        LOG_DEBUG("DTLS: mutual authentication OFF\n");
+#endif
 
         /* Load credential for the DTLS server */
         if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, server_cred,
@@ -78,8 +85,6 @@ int dtls_server(int argc, char **argv)
             LOG_ERROR("Failed to load private key from memory.\n");
             return -1;
         }
-
-        wolfSSL_CTX_mutual_auth(sk->ctx, 1);
 
         /* Create the DTLS session */
         ret = sock_dtls_session_create(sk);
@@ -142,8 +147,8 @@ int dtls_server(int argc, char **argv)
             LOG_INFO("Connection closed ok.\n");
             break;
         }
-    // } while (1);
-    } while (0);
+    } while (1);
+    // } while (0);
     return 0;
 }
 

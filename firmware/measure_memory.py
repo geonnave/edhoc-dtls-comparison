@@ -58,7 +58,7 @@ def get_stack_size(boards, protocol):
 
     return int(ps_match.group(0)[1:-1])
 
-protocols = ["edhoc", "dtls_rpk", "dtls_cert"]
+protocols = ["edhoc", "dtls_rpk", "dtls_rpk_mutual", "dtls_cert", "dtls_cert_mutual"]
 # modes = ["shell", "eval"]
 mode = "shell"
 
@@ -70,20 +70,27 @@ data = {
     "stack": [],
 }
 
+dtls_client_cmd = "dtlsc fe80::5c0d:cee5:5196:8be8"
+dtls_server_cmd = "dtlss"
+
 boards = [
     { # initiator / client,
-        "id": "000683380505",
-        "port": "/dev/ttyACM0",
+        "id": "000683965284",
+        "port": "/dev/ttyACM1",
         "edhoc_cmd": "edhoci",
-        "dtls_rpk_cmd": "dtlsc fe80::b834:d60b:796f:8de0",
-        "dtls_cert_cmd": "dtlsc fe80::b834:d60b:796f:8de0",
+        "dtls_rpk_cmd": dtls_client_cmd,
+        "dtls_cert_cmd": dtls_client_cmd,
+        "dtls_rpk_mutual_cmd": dtls_client_cmd,
+        "dtls_cert_mutual_cmd": dtls_client_cmd,
     },
     { # responder / server,
-        "id": "001050283894",
-        "port": "/dev/ttyACM1",
+        "id": "000683108544",
+        "port": "/dev/ttyACM2",
         "edhoc_cmd": "edhocr",
-        "dtls_rpk_cmd": "dtlss",
-        "dtls_cert_cmd": "dtlss",
+        "dtls_rpk_cmd": dtls_server_cmd,
+        "dtls_cert_cmd": dtls_server_cmd,
+        "dtls_rpk_mutual_cmd": dtls_server_cmd,
+        "dtls_cert_mutual_cmd": dtls_server_cmd,
     },
 ]
 

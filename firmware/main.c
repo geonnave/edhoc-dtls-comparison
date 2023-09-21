@@ -77,7 +77,7 @@ static void run_evaluation(size_t times)
         edhoc_initiator(0, NULL);
 #elif defined(USE_DTLS13)
         int argc = 2;
-        char *argv[] = {"dtlsc", "fe80::b834:d60b:796f:8de0"};
+        char *argv[] = {"dtlsc", "fe80::5c0d:cee5:5196:8be8"};
         dtls_client(argc, argv);
 #endif
         ztimer_sleep(ZTIMER_MSEC, 3000);
