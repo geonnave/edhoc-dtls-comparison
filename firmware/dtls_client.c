@@ -35,12 +35,14 @@ static void usage(const char *cmd_name)
     LOG_ERROR("Usage: %s <server-address>\n", cmd_name);
 }
 
+#ifdef DTLS_MUTUAL_AUTH
 static int myVerify(int preverify, WOLFSSL_X509_STORE_CTX* store)
 {
     (void)preverify;
     (void)store;
     return 1;
 }
+#endif
 
 int dtls_client(int argc, char **argv)
 {

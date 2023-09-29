@@ -30,12 +30,14 @@ extern uint8_t wolfssl_io_memory[];
 extern size_t wolfssl_io_memory_sz;
 #endif
 
+#ifdef DTLS_MUTUAL_AUTH
 static int myVerify(int preverify, WOLFSSL_X509_STORE_CTX* store)
 {
     (void)preverify;
     (void)store;
     return 1;
 }
+#endif
 
 int dtls_server(int argc, char **argv)
 {

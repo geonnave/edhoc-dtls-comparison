@@ -28,23 +28,46 @@ extern void mbedtls_memory_buffer_alloc_init(uint8_t *buf, size_t len);
 #include "wolfssl/ssl.h"
 extern int dtls_client(int argc, char **argv);
 extern int dtls_server(int argc, char **argv);
-
 #ifdef MODULE_WOLFSSL_STATIC_MEMORY
-#define WOLFSSL_GENERAL_MEMORY_MAX (100*1024)
-#define WOLFSSL_IO_MEMORY_MAX (80*1024)
+// #define WOLFSSL_GENERAL_MEMORY_MAX (80*1024)
+// #define WOLFSSL_IO_MEMORY_MAX (4*1024)
 uint8_t wolfssl_general_memory[WOLFSSL_GENERAL_MEMORY_MAX];
 size_t wolfssl_general_memory_sz = WOLFSSL_GENERAL_MEMORY_MAX;
 uint8_t wolfssl_io_memory[WOLFSSL_IO_MEMORY_MAX];
 size_t wolfssl_io_memory_sz = WOLFSSL_IO_MEMORY_MAX;
-#endif
-
+// code to measure heap usage
+unsigned char heap_pattern[4] = {0xDE, 0xAD, 0xBE, 0xEF};
+int heap_measure(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    int counter = 0;
+    for (int i = 0; i < WOLFSSL_GENERAL_MEMORY_MAX; i += 4)
+        if (memcmp(&wolfssl_general_memory[i], heap_pattern, 4) != 0)
+            counter += 4;
+    LOG_INFO("Heap usage GENERAL: %d bytes\n", counter);
+    counter = 0;
+    for (int i = 0; i < WOLFSSL_IO_MEMORY_MAX; i += 4)
+        if (memcmp(&wolfssl_io_memory[i], heap_pattern, 4) != 0)
+            counter += 4;
+    LOG_INFO("Heap usage IO: %d bytes\n", counter);
+    return 0;
+}
+#endif /* MODULE_WOLFSSL_STATIC_MEMORY */
 #ifndef EVALUATION_MODE
 static const shell_command_t shell_commands[] = {
     { "dtlsc", "Start a DTLS client", dtls_client },
     { "dtlss", "Start and stop a DTLS server", dtls_server },
+#ifdef MODULE_WOLFSSL_STATIC_MEMORY
+    { "heap", "Measure heap usage", heap_measure },
+#endif
     { NULL, NULL, NULL }
 };
-#endif
+#endif /* EVALUATION_MODE */
+#elif defined(USE_NONE)
+static const shell_command_t shell_commands[] = {
+    { NULL, NULL, NULL }
+};
 #endif
 
 void MEASURE_START(void)
@@ -106,6 +129,15 @@ int main(void)
 #endif
 #elif defined(USE_DTLS13)
     LOG_INFO("Selected protocol: DTLS 1.3\n");
+#ifndef EVALUATION_MODE
+    // paint the heap so that we can measure its size later
+    int i = 0;
+    for (i = 0; i < WOLFSSL_GENERAL_MEMORY_MAX; i += 4)
+        memcpy(&wolfssl_general_memory[i], heap_pattern, 4);
+    for (i = 0; i < WOLFSSL_IO_MEMORY_MAX; i += 4)
+        memcpy(&wolfssl_io_memory[i], heap_pattern, 4);
+#endif
+
     int ret = wolfSSL_Init();
     if (ret != WOLFSSL_SUCCESS) {
         LOG_ERROR("wolfSSL_Init failed: %d\n", ret);
