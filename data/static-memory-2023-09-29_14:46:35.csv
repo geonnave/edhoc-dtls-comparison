@@ -1,6 +1,0 @@
-protocol,text,bss,data
-edhoc,30463,680,714
-dtls_rpk,141202,4800,492
-dtls_cert,139487,4800,2012
-dtls_rpk_mutual,141266,4800,492
-dtls_cert_mutual,139551,4800,2012
