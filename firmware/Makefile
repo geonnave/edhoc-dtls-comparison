@@ -1,4 +1,6 @@
+# use this version: https://github.com/geonnave/RIOT/tree/have_wolfssl_with_prk
 RIOTBASE ?= $(CURDIR)/../../../dev/RIOT-FORK
+
 EDHOC_RS_DIR ?= $(CURDIR)/../../../dev/edhoc-rs-FORK
 BOARD ?= nrf52840dk
 DEVELHELP ?= 1
