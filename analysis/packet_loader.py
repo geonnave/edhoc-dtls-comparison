@@ -166,4 +166,6 @@ if __name__ == '__main__':
         f'./{data_folder}/edhoc.pcap',
         f'./{data_folder}/dtls_rpk.pcap',
         f'./{data_folder}/dtls_cert.pcap',
+        f'./{data_folder}/dtls_rpk_mutual.pcap',
+        f'./{data_folder}/dtls_cert_mutual.pcap',
     ])

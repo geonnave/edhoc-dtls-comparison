@@ -16,14 +16,24 @@ CFLAGS += -DEVALUATION_MODE -DEVALUATION_TIMES=$(TIMES)
 endif
 
 # cryptocell310's RNG requires a large stack size
-CFLAGS += -DTHREAD_STACKSIZE_MAIN=16384 -DGCOAP_STACK_SIZE=8192+512
+CFLAGS += -DTHREAD_STACKSIZE_MAIN=8192 -DGCOAP_STACK_SIZE=8192+512
 
 ifeq ($(findstring dtls,$(SEC)),dtls)
 
 ifeq (dtls_rpk, $(SEC))
 CFLAGS += -DDTLS_RPK
+CFLAGS += -DWOLFSSL_GENERAL_MEMORY_MAX=80*1024 -DWOLFSSL_IO_MEMORY_MAX=4*1024
+USEMODULE += wolfssl_rpk
 else ifeq (dtls_cert, $(SEC))
 CFLAGS += -DDTLS_CERT
+CFLAGS += -DWOLFSSL_GENERAL_MEMORY_MAX=80*1024 -DWOLFSSL_IO_MEMORY_MAX=4*1024
+else ifeq (dtls_rpk_mutual, $(SEC))
+CFLAGS += -DDTLS_RPK -DDTLS_MUTUAL_AUTH
+CFLAGS += -DWOLFSSL_GENERAL_MEMORY_MAX=81*1024 -DWOLFSSL_IO_MEMORY_MAX=4*1024
+USEMODULE += wolfssl_rpk
+else ifeq (dtls_cert_mutual, $(SEC))
+CFLAGS += -DDTLS_CERT -DDTLS_MUTUAL_AUTH
+CFLAGS += -DWOLFSSL_GENERAL_MEMORY_MAX=80*1024 -DWOLFSSL_IO_MEMORY_MAX=4*1024
 endif
 
 # flags for the application code
@@ -39,17 +49,18 @@ USEMODULE += wolfcrypt_ecc
 USEMODULE += wolfcrypt_cryptocell
 USEMODULE += wolfssl
 USEMODULE += wolfssl_static_memory
-USEMODULE += wolfssl_rpk
 USEMODULE += wolfssl_dtls
 USEMODULE += wolfssl_tls13
 USEMODULE += wolfssl_dtls13
-else
+else ifeq (edhoc, $(SEC))
 CFLAGS += -DUSE_EDHOC # flag for the application code
 CFLAGS += -DCONFIG_GCOAP_RESEND_BUFS_MAX=2
 INCLUDES += -I$(EDHOC_RS_DIR)/target/include
 ARCHIVES += $(EDHOC_RS_DIR)/target/thumbv7em-none-eabihf/release/libedhoc_rs.a
 
 USEMODULE += gcoap
+else
+CFLAGS += -DUSE_NONE
 endif
 
 # Include packages that pull up and auto-init the link layer.
@@ -69,7 +80,9 @@ USEMODULE += shell
 
 # debug configurations
 CFLAGS += -DLOG_LEVEL=LOG_INFO
+# CFLAGS += -DLOG_LEVEL=LOG_DEBUG
 # USEMODULE += wolfssl_debug
+# CFLAGS += -DWOLFSSL_DEBUG_MEMORY -Wno-error=format
 
 CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic
 USEMODULE += shell_cmds_default

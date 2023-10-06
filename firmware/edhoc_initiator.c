@@ -14,7 +14,7 @@ extern void MEASURE_STOP(void);
 
 const kernel_pid_t MAIN_THREAD_PID = 1;
 const uint16_t COAP_EDHOC_TYPE = 999;
-static char *addr_str = "[fe80::b834:d60b:796f:8de0%6]:5683";
+static char *addr_str = "[fe80::5c0d:cee5:5196:8be8%6]:5683";
 sock_udp_ep_t remote = { .port = CONFIG_GCOAP_PORT };
 EdhocInitiatorC initiator = {0};
 

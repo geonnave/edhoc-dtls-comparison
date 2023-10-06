@@ -21,8 +21,6 @@
 static sock_tls_t skv;
 static sock_tls_t *sk = &skv;
 
-static const char Test_dtls_string[] = "DTLS OK!";
-
 #define APP_DTLS_BUF_SIZE 64
 
 #ifdef MODULE_WOLFSSL_STATIC_MEMORY
@@ -30,6 +28,15 @@ extern uint8_t wolfssl_general_memory[];
 extern size_t wolfssl_general_memory_sz;
 extern uint8_t wolfssl_io_memory[];
 extern size_t wolfssl_io_memory_sz;
+#endif
+
+#ifdef DTLS_MUTUAL_AUTH
+static int myVerify(int preverify, WOLFSSL_X509_STORE_CTX* store)
+{
+    (void)preverify;
+    (void)store;
+    return 1;
+}
 #endif
 
 int dtls_server(int argc, char **argv)
@@ -54,8 +61,16 @@ int dtls_server(int argc, char **argv)
             return -1;
         }
 
-        // disable server verify
+#ifdef DTLS_MUTUAL_AUTH
+        /* Verify peer, but do not verify CA */
+        wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_PEER, myVerify);
+        wolfSSL_CTX_mutual_auth(sk->ctx, 1);
+        LOG_DEBUG("DTLS: mutual authentication ON\n");
+#else
+        /* Disable cert verification */
         wolfSSL_CTX_set_verify(sk->ctx, WOLFSSL_VERIFY_NONE, 0);
+        LOG_DEBUG("DTLS: mutual authentication OFF\n");
+#endif
 
         /* Load credential for the DTLS server */
         if (wolfSSL_CTX_use_certificate_buffer(sk->ctx, server_cred,
@@ -110,7 +125,8 @@ int dtls_server(int argc, char **argv)
             }
             LOG_INFO("DTLS: end handshake ok.\n");
 
-#ifdef HANDSHAKE_ONLY
+#ifndef HANDSHAKE_ONLY
+            const char Test_dtls_string[] = "DTLS OK!";
             /* Wait until data is received */
             LOG_DEBUG("Connection accepted\n");
             ret = wolfSSL_read(sk->ssl, buf, APP_DTLS_BUF_SIZE);
@@ -133,8 +149,8 @@ int dtls_server(int argc, char **argv)
             LOG_INFO("Connection closed ok.\n");
             break;
         }
-    // } while (1);
-    } while (0);
+    } while (1);
+    // } while (0);
     return 0;
 }
 
