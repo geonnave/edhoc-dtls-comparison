@@ -54,7 +54,7 @@ int send_edhoc_coap_request(uint8_t *payload, size_t paylen, uint8_t value_to_pr
         len += paylen + 1;
     }
 
-    LOG_DEBUG("Sending request of len %u to %s\n", len, addr_str);
+    // LOG_DEBUG("Sending request of len %u to %s\n", len, addr_str);
     // od_hex_dump(buf, len, OD_WIDTH_DEFAULT);
     ssize_t ret = gcoap_req_send(buf, len, &remote, coap_response_handler_for_edhoc, NULL);
     if (ret <= 0) {
@@ -82,7 +82,7 @@ int edhoc_initiator(int argc, char **argv) {
     EdhocMessageBuffer message_1;
     initiator_prepare_message_1(&initiator, &message_1);
     LOG_DEBUG("EDHOC: prepared message_1:\n");
-    // od_hex_dump(message_1.content, message_1.len, OD_WIDTH_DEFAULT);
+    od_hex_dump(message_1.content, message_1.len, OD_WIDTH_DEFAULT);
 
     send_edhoc_coap_request(message_1.content, message_1.len, 0xF5); // send with prepended CBOR true in message_1
 
@@ -108,16 +108,16 @@ int edhoc_initiator(int argc, char **argv) {
             uint8_t c_r_received;
             initiator_process_message_2(&initiator, &message_2, &c_r_received);
             LOG_DEBUG("EDHOC: processed message_2 (c_r_received: %u):\n", c_r_received);
-            // od_hex_dump(message_2.content, message_2.len, OD_WIDTH_DEFAULT);
+            od_hex_dump(message_2.content, message_2.len, OD_WIDTH_DEFAULT);
 
             // construct and send message_3
             EdhocMessageBuffer message_3;
             uint8_t prk_out_initiator[SHA256_DIGEST_LEN];
             initiator_prepare_message_3(&initiator, &message_3, &prk_out_initiator);
             LOG_DEBUG("EDHOC: prepared message_3:\n");
-            // od_hex_dump(message_3.content, message_3.len, OD_WIDTH_DEFAULT);
+            od_hex_dump(message_3.content, message_3.len, OD_WIDTH_DEFAULT);
             LOG_DEBUG("EDHOC: prk_out_initiator: \n");
-            // od_hex_dump(prk_out_initiator, SHA256_DIGEST_LEN, OD_WIDTH_DEFAULT);
+            od_hex_dump(prk_out_initiator, SHA256_DIGEST_LEN, OD_WIDTH_DEFAULT);
 
             int ret = send_edhoc_coap_request(message_3.content, message_3.len, c_r_received); // send with prepended c_r_received in message_3
             if (ret != 0) {

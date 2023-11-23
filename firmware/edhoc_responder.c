@@ -50,7 +50,7 @@ static ssize_t coap_edhoc_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coa
         uint8_t c_r_sent;
         responder_prepare_message_2(&responder, &message_2, &c_r_sent);
         LOG_DEBUG("EDHOC: prepared message_2:\n");
-        // od_hex_dump(message_2.content, message_2.len, OD_WIDTH_DEFAULT);
+        od_hex_dump(message_2.content, message_2.len, OD_WIDTH_DEFAULT);
 
         gcoap_resp_init(pdu, buf, len, COAP_CODE_CHANGED);
         coap_opt_add_format(pdu, COAP_FORMAT_TEXT);
@@ -72,7 +72,7 @@ static ssize_t coap_edhoc_handler(coap_pkt_t* pdu, uint8_t *buf, size_t len, coa
             return -1;
         }
         LOG_DEBUG("\nprk_out_responder: \n");
-        // od_hex_dump(prk_out_responder, SHA256_DIGEST_LEN, OD_WIDTH_DEFAULT);
+        od_hex_dump(prk_out_responder, SHA256_DIGEST_LEN, OD_WIDTH_DEFAULT);
 
         ret = gcoap_response(pdu, buf, len, COAP_CODE_CHANGED);
         if (ret <= 0) {

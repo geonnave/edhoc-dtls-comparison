@@ -81,15 +81,15 @@ USEMODULE += ztimer_msec
 USEMODULE += shell
 
 # debug configurations
-CFLAGS += -DLOG_LEVEL=LOG_INFO
-# CFLAGS += -DLOG_LEVEL=LOG_DEBUG
+# CFLAGS += -DLOG_LEVEL=LOG_INFO
+CFLAGS += -DLOG_LEVEL=LOG_DEBUG
 # USEMODULE += wolfssl_debug
 # CFLAGS += -DWOLFSSL_DEBUG_MEMORY -Wno-error=format
 
 CFLAGS += -Wno-error=unused-variable -Wno-error=unused-function -Wno-error=unused-parameter -Wno-error=pedantic
 USEMODULE += shell_cmds_default
 USEMODULE += ps
-# USEMODULE += od
+USEMODULE += od
 # USEMODULE += fmt
 # USEMODULE += netutils
 # USEMODULE += random
