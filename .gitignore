@@ -6,3 +6,5 @@ results
 *.pdf
 *.html
 __pycache__
+data-*
+out-retest

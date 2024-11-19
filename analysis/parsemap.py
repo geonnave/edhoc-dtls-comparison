@@ -1,4 +1,4 @@
-import re, subprocess, rich, sys, os, datetime
+import re, subprocess, rich, sys, os, datetime, json
 import pandas as pd
 
 def run_cmd(cmd):
@@ -124,11 +124,11 @@ section_names = ["text", "bss", "relocate"]
 
 # map_file = "../firmware/bin/nrf52840dk/edhoc-dtls-1_3-comparison-edhoc-shell.map"
 map_files = {
-    "edhoc": "../firmware/bin/nrf52840dk/edhoc-dtls-1_3-comparison-edhoc-shell.map",
-    "dtls_rpk": "../firmware/bin/nrf52840dk/edhoc-dtls-1_3-comparison-dtls_rpk-shell.map",
-    "dtls_cert": "../firmware/bin/nrf52840dk/edhoc-dtls-1_3-comparison-dtls_cert-shell.map",
-    "dtls_rpk_mutual": "../firmware/bin/nrf52840dk/edhoc-dtls-1_3-comparison-dtls_rpk_mutual-shell.map",
-    "dtls_cert_mutual": "../firmware/bin/nrf52840dk/edhoc-dtls-1_3-comparison-dtls_cert_mutual-shell.map",
+    "edhoc": "../firmware/bin/nrf52840dk/edhoc-dtls-1_3-comparison-edhoc-eval.map",
+    "dtls_rpk": "../firmware/bin/nrf52840dk/edhoc-dtls-1_3-comparison-dtls_rpk-eval.map",
+    "dtls_cert": "../firmware/bin/nrf52840dk/edhoc-dtls-1_3-comparison-dtls_cert-eval.map",
+    "dtls_rpk_mutual": "../firmware/bin/nrf52840dk/edhoc-dtls-1_3-comparison-dtls_rpk_mutual-eval.map",
+    "dtls_cert_mutual": "../firmware/bin/nrf52840dk/edhoc-dtls-1_3-comparison-dtls_cert_mutual-eval.map",
 }
 
 # the objects in the pattern below where obtained with this command (with parsemap.py modified to print a unique list of compilation units):
@@ -141,7 +141,7 @@ wolfssl_compilation_units_pattern = ".*(edhoc-dtls-1_3-comparison|wolfcrypt|wolf
 wolfssl_heap_buffers_symbol_pattern = ".*(wolfssl_general_memory|wolfssl_io_memory).*"
 
 edhoc_rs_cc310_rng_buffers_symbol_pattern = ".*(rnd_context|rnd_work_buffer).*"
-wolfssl_cc310_rng_buffers_symbol_pattern = ".*(wc_rndState|wc_rndWorkBuff).*"
+wolfssl_cc310_rng_buffers_symbol_pattern = ".*(wc_|wolfCrypt|cc310).*"
 
 def check_pattern_comp_unit(comp_unit, configuration):
     if type(comp_unit) is not str:
@@ -206,6 +206,13 @@ for configuration, map_file in map_files.items():
             if check_pattern_comp_unit(d["compilation_unit"], configuration) and check_pattern_symbol(symbol_name, configuration)
         }
         # rich.print(sec)
+
+        # Sort by size (just for debugging the updates to the paper)
+        sorted_sections = dict(reversed(sorted(sections_lib_only[sec].items(), key=lambda item: item[1]["size"])))
+        # Write the sorted dictionary to the file
+        with open(f"out-retest/symbols_{configuration}_{sec}.json", "w") as f:
+            json.dump(sorted_sections, f, indent=4)
+
     # rich.print(sections_lib_only)
 
     print_like_gnu_size(configuration, sections, sections_lib_only)
